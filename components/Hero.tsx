@@ -1,0 +1,145 @@
+"use client";
+import { scrollToTop } from "@/components/ScrollToTop";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+
+function LiveClock() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const tick = () => setTime(new Date().toLocaleTimeString("en-US", { hour12:false, hour:"2-digit", minute:"2-digit", second:"2-digit" }));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className="font-mono text-xs" style={{ color:"var(--text-3)" }}>LOCAL &middot; {time}</span>;
+}
+
+function PhotoSlot({ src, label, icon, className, style }: {
+  src:string; label:string; icon:string; className?:string; style?:React.CSSProperties;
+}) {
+  return (
+    <div className={`img-zoom relative group rounded-2xl overflow-hidden ${className ?? ""}`}
+      style={{
+        borderTop:    "1px solid rgba(255,255,255,0.82)",
+        borderLeft:   "1px solid rgba(255,255,255,0.52)",
+        borderRight:  "1px solid rgba(255,255,255,0.24)",
+        borderBottom: "1px solid rgba(255,255,255,0.12)",
+        boxShadow:    "0 4px 16px rgba(74,100,144,0.12), inset 0 1px 0 rgba(255,255,255,0.82)",
+        background:   "rgba(255,255,255,0.20)",
+        ...style,
+      }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px]"
+        style={{ background:"rgba(242,224,208,0.22)" }}>
+        <span className="text-2xl opacity-50">{icon}</span>
+        <span className="font-mono text-[9px] text-center px-2" style={{ color:"var(--text-3)" }}>{label}</span>
+      </div>
+      <Image src={src} alt={label} fill className="object-cover z-10"
+        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+      <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2"
+        style={{ background:"linear-gradient(to top,rgba(0,0,0,0.35),transparent)" }}>
+        <span className="font-mono text-[9px] text-white">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+export default function Hero() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollToTop();
+    const items = ref.current?.querySelectorAll(".h-in");
+    items?.forEach((el, i) => {
+      const e = el as HTMLElement;
+      e.style.animationDelay = `${i * 110 + 2100}ms`;
+      e.style.animationFillMode = "both";
+      e.classList.add("anim-fade-up");
+    });
+  }, []);
+
+  return (
+    <section id="hero" className="relative min-h-screen flex flex-col justify-center pt-16 pb-10 overflow-hidden">
+      <div ref={ref} className="sp sp-inner flex flex-col gap-4">
+
+        {/* Location + clock */}
+        <div className="h-in opacity-0 flex items-center gap-4 text-xs" style={{ color:"var(--text-3)" }}>
+          <span className="font-mono uppercase tracking-widest">Based in Indonesia</span>
+          <span style={{ opacity:0.4 }}>|</span>
+          <LiveClock />
+        </div>
+
+        {/* Big name */}
+        <div className="h-in opacity-0 overflow-hidden">
+          <h1 className="font-display leading-[0.90] tracking-tight uppercase"
+            style={{ fontSize:"clamp(3.5rem,13vw,10rem)", color:"var(--text-1)" }}>
+            ELBON
+          </h1>
+        </div>
+        <div className="h-in opacity-0 overflow-hidden">
+          <h1 className="font-display leading-[0.90] tracking-tight uppercase"
+            style={{ fontSize:"clamp(2.2rem,8.5vw,6.5rem)", WebkitTextStroke:"2px var(--text-1)", color:"transparent" }}>
+            AMINALLOH
+          </h1>
+        </div>
+
+        {/* Role */}
+        <div className="h-in opacity-0 mt-1">
+          <p className="text-base sm:text-lg leading-relaxed" style={{ color:"var(--text-2)" }}>
+            Network Technician &middot; Problem Solver
+          </p>
+          <p className="text-sm mt-0.5" style={{ color:"var(--text-3)" }}>SMKS Yaspih Rajeg &mdash; TKJ</p>
+        </div>
+
+        {/* CTAs — no Available badge here, it's in navbar on desktop */}
+        <div className="h-in opacity-0 flex flex-wrap gap-3 mt-1">
+          <button onClick={() => document.querySelector("#projects")?.scrollIntoView({ behavior:"smooth" })}
+            className="glass-btn-primary px-6 py-3 rounded-xl text-sm font-medium">
+            View Projects &rarr;
+          </button>
+          <button onClick={() => document.querySelector("#contact")?.scrollIntoView({ behavior:"smooth" })}
+            className="glass-btn px-6 py-3 rounded-xl text-sm font-medium"
+            style={{ color:"var(--text-2)" }}>
+            Get in Touch
+          </button>
+          {/* Available — mobile only (navbar hides it on mobile) */}
+          <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl"
+            style={{ background:"rgba(107,196,107,0.18)", border:"1px solid rgba(107,196,107,0.35)" }}>
+            <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background:"#4ade80" }} />
+            <span className="text-xs font-medium" style={{ color:"#2d7d2d" }}>Available</span>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="h-in opacity-0 flex gap-8 pt-4 mt-1"
+          style={{ borderTop:"1px solid rgba(255,255,255,0.28)" }}>
+          {[{ v:"8+", l:"Rooms networked" },{ v:"3+", l:"Years experience" },{ v:"50+", l:"Issues resolved" }].map(s => (
+            <div key={s.l} className="flex flex-col gap-0.5 group cursor-default">
+              <span className="font-display text-2xl gradient-text group-hover:scale-110 transition-transform duration-200 inline-block origin-left">{s.v}</span>
+              <span className="text-xs font-mono" style={{ color:"var(--text-3)" }}>{s.l}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Photo strip */}
+        <div className="h-in opacity-0 mt-4">
+          <p className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color:"var(--text-3)" }}>Gallery</p>
+          <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-6 sm:overflow-visible"
+            style={{ scrollbarWidth:"none" } as React.CSSProperties}>
+            {[
+              { src:"/images/profile/1.webp",                  label:"Profile",   icon:"👤" },
+              { src:"/images/projects/network/1.webp",         label:"AP Setup",  icon:"📡" },
+              { src:"/images/projects/network/2.webp",         label:"Cabling",   icon:"🔌" },
+              { src:"/images/projects/troubleshooting/1.webp", label:"Winbox",    icon:"🖥️" },
+              { src:"/images/projects/troubleshooting/2.webp", label:"Ping Test", icon:"⚡" },
+              { src:"/images/projects/web/1.webp",             label:"Ruz Store", icon:"🛒" },
+            ].map(p => (
+              <PhotoSlot key={p.label} {...p}
+                className="flex-shrink-0 w-24 sm:w-auto"
+                style={{ height:90 }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
