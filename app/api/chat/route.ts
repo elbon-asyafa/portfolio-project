@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     // gemini-2.0-flash-lite: 30 RPM, 1500 RPD on free tier
     // Much better than gemini-2.0-flash (5 RPM, 20 RPD)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_KEY}`;
 
     const history = (messages as { role: string; content: string }[]).map(m => ({
       role: m.role === "assistant" ? "model" : "user",
