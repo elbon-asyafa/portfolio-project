@@ -65,7 +65,7 @@ export default function App() {
         <div className="sp sp-inner flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="font-display text-lg" style={{ color:"var(--primary)" }}>Elbon.</span>
           <p className="text-sm text-center" style={{ color:"var(--text-3)" }}>
-            &copy; {new Date().getFullYear()} Elbon Aminalloh Asyafa Lubis Prasetyo &middot; TKJ &middot; SMKS Yaspih Rajeg
+            &copy; {new Date().getFullYear()} Elbon Aminalloh Asyafa Lubis Prasetyo
           </p>
           <button onClick={() => { window.dispatchEvent(new CustomEvent("reset-scroll-target")); window.scrollTo({top:0}); }}
             className="text-xs hover:opacity-70 transition-opacity" style={{ color:"var(--text-3)" }}>
@@ -74,20 +74,14 @@ export default function App() {
         </div>
       </footer>
 
-      {/* ── Bottom bar: Dock (mobile: + AI Button inline) ── */}
-      <div className="fixed bottom-3 left-0 right-0 z-[500] flex items-end justify-center gap-3 px-4 pointer-events-none">
+      {/* ── Dock: always centered bottom ── */}
+      <div className="fixed bottom-3 left-0 right-0 z-[500] flex items-end justify-center px-4 pointer-events-none">
         <div className="pointer-events-auto">
           <WindowPopups inline />
         </div>
-        {/* AI inline only on mobile, hidden md+ (desktop uses its own fixed position) */}
-        <div className="pointer-events-auto shrink-0 md:hidden">
-          <AIButton inline />
-        </div>
       </div>
-      {/* AI standalone on desktop */}
-      <div className="hidden md:block">
-        <AIButton />
-      </div>
+      {/* AI button: always fixed bottom-right */}
+      <AIButton />
     </>
   );
 }

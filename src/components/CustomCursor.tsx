@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function CustomCursor() {
   const dotRef  = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export default function CustomCursor() {
   const dotSize  = clicking ? 6  : hovering ? 10 : 8;
   const ringSize = clicking ? 24 : hovering ? 44 : 34;
 
-  return (
+  return createPortal(
     <>
       {/* ── Inner dot — solid, high contrast ── */}
       <div
@@ -123,6 +124,7 @@ export default function CustomCursor() {
           transform:     "translate(0px,0px)",
         }}
       />
-    </>
+    </>,
+    document.body
   );
 }

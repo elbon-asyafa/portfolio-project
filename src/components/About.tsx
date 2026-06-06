@@ -21,7 +21,7 @@ export default function About() {
   }, []);
 
   return (
-    <section id="about" ref={ref} className="relative py-24">
+    <section id="about" ref={ref} className="relative pt-24 pb-10">
       <div className="sp sp-inner">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
@@ -86,8 +86,9 @@ export default function About() {
 
             {/* Profile photo */}
             <div className="reveal w-full flex justify-center">
-              <div className="relative w-80 h-80 xl:w-96 xl:h-96 rounded-[2.5rem] overflow-hidden flex-shrink-0"
+              <div className="relative w-88 xl:w-96 rounded-[2.5rem] overflow-hidden flex-shrink-0"
                 style={{
+                  aspectRatio: "3/4",
                   border: "1.5px solid rgba(255,255,255,0.60)",
                   boxShadow: "0 8px 40px rgba(74,100,144,0.18), inset 0 1px 0 rgba(255,255,255,0.70)",
                   background: "rgba(74,100,144,0.10)",

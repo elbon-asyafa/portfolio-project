@@ -16,7 +16,7 @@ function PhotoSlot({ src, label, icon, className, style }: {
   src:string; label:string; icon:string; className?:string; style?:React.CSSProperties;
 }) {
   return (
-    <div className={`img-zoom relative group rounded-2xl overflow-hidden ${className ?? ""}`}
+    <div className={`relative group rounded-2xl overflow-hidden ${className ?? ""}`}
       style={{
         borderTop:    "1px solid rgba(255,255,255,0.82)",
         borderLeft:   "1px solid rgba(255,255,255,0.52)",
@@ -41,6 +41,53 @@ function PhotoSlot({ src, label, icon, className, style }: {
   );
 }
 
+const ALL_PHOTOS = [
+  { src:"/images/profile/1.webp",                  label:"Profile 1",  icon:"👤" },
+  { src:"/images/profile/2.webp",                  label:"Profile 2",  icon:"👤" },
+  { src:"/images/projects/network/1.webp",         label:"Network 1",  icon:"📡" },
+  { src:"/images/projects/network/2.webp",         label:"Network 2",  icon:"📡" },
+  { src:"/images/projects/troubleshooting/1.webp", label:"Debug 1",    icon:"🖥️" },
+  { src:"/images/projects/troubleshooting/2.webp", label:"Debug 2",    icon:"🖥️" },
+  { src:"/images/projects/web/1.webp",             label:"Ruz Store 1",icon:"🛒" },
+  { src:"/images/projects/web/2.webp",             label:"Ruz Store 2",icon:"🛒" },
+];
+
+const MOBILE_PHOTOS = [
+  { src:"/images/profile/1.webp",                  label:"Profile 1",  icon:"👤" },
+  { src:"/images/profile/2.webp",                  label:"Profile 2",  icon:"👤" },
+  { src:"/images/profile/3.webp",                  label:"Profile 3",  icon:"👤" },
+  { src:"/images/projects/network/1.webp",         label:"Network 1",  icon:"📡" },
+  { src:"/images/projects/network/2.webp",         label:"Network 2",  icon:"📡" },
+  { src:"/images/projects/network/3.webp",         label:"Network 3",  icon:"📡" },
+  { src:"/images/projects/troubleshooting/1.webp", label:"Debug 1",    icon:"🖥️" },
+  { src:"/images/projects/troubleshooting/2.webp", label:"Debug 2",    icon:"🖥️" },
+  { src:"/images/projects/troubleshooting/3.webp", label:"Debug 3",    icon:"🖥️" },
+  { src:"/images/projects/web/1.webp",             label:"Ruz Store 1",icon:"🛒" },
+  { src:"/images/projects/web/2.webp",             label:"Ruz Store 2",icon:"🛒" },
+  { src:"/images/projects/web/3.webp",             label:"Ruz Store 3",icon:"🛒" },
+];
+
+function GalleryStrip() {
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <div className="relative">
+      {/* Desktop: static grid */}
+      <div className="hidden sm:grid gap-3" style={{ gridTemplateColumns:`repeat(${ALL_PHOTOS.length}, 1fr)` }}>
+        {ALL_PHOTOS.map(p => (
+          <PhotoSlot key={p.label} {...p} style={{ height:130 }} />
+        ))}
+      </div>
+      {/* Mobile: swipe */}
+      <div ref={ref} className="flex sm:hidden gap-3 overflow-x-auto pb-1"
+        style={{ scrollbarWidth:"none", WebkitOverflowScrolling:"touch" } as React.CSSProperties}>
+        {MOBILE_PHOTOS.map(p => (
+          <PhotoSlot key={p.label} {...p} className="flex-shrink-0" style={{ width:140, height:90 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -59,14 +106,12 @@ export default function Hero() {
     <section id="hero" className="relative min-h-screen flex flex-col justify-center pt-16 pb-10 overflow-hidden">
       <div ref={ref} className="sp sp-inner flex flex-col gap-4">
 
-        {/* Location + clock */}
         <div className="h-in opacity-0 flex items-center gap-4 text-xs" style={{ color:"var(--text-3)" }}>
           <span className="font-mono uppercase tracking-widest">Based in Indonesia</span>
           <span style={{ opacity:0.4 }}>|</span>
           <LiveClock />
         </div>
 
-        {/* Big name */}
         <h1 className="flex flex-col">
           <span className="h-in opacity-0 overflow-hidden font-display leading-[0.90] tracking-tight uppercase"
             style={{ fontSize:"clamp(3.5rem,13vw,10rem)", color:"var(--text-1)" }}>
@@ -78,7 +123,6 @@ export default function Hero() {
           </span>
         </h1>
 
-        {/* Role */}
         <div className="h-in opacity-0 mt-1">
           <p className="text-base sm:text-lg leading-relaxed" style={{ color:"var(--text-2)" }}>
             Network Technician &middot; Problem Solver
@@ -86,7 +130,6 @@ export default function Hero() {
           <p className="text-sm mt-0.5" style={{ color:"var(--text-3)" }}>SMKS Yaspih Rajeg &mdash; TKJ</p>
         </div>
 
-        {/* CTAs — no Available badge here, it's in navbar on desktop */}
         <div className="h-in opacity-0 flex flex-wrap gap-3 mt-1">
           <button onClick={() => document.querySelector("#projects")?.scrollIntoView({ behavior:"smooth" })}
             className="glass-btn-primary px-6 py-3 rounded-xl text-sm font-medium">
@@ -97,7 +140,6 @@ export default function Hero() {
             style={{ color:"var(--text-2)" }}>
             Get in Touch
           </button>
-          {/* Available — mobile only (navbar hides it on mobile) */}
           <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl"
             style={{ background:"rgba(107,196,107,0.18)", border:"1px solid rgba(107,196,107,0.35)" }}>
             <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background:"#4ade80" }} />
@@ -105,45 +147,20 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* CV Download buttons */}
         <div className="h-in opacity-0 flex flex-wrap gap-2 -mt-1">
-          <a
-            href="/cv/CV_ATS_Elbon_Aminalloh.pdf"
-            download="CV_ATS_Elbon_Aminalloh.pdf"
+          <a href="/cv/CV_ATS_Elbon_Aminalloh.pdf" download="CV_ATS_Elbon_Aminalloh.pdf"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono transition-all duration-200 hover:scale-105 active:scale-95"
             style={{
-              background: "rgba(255,255,255,0.18)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              borderTop:    "1px solid rgba(255,255,255,0.75)",
-              borderLeft:   "1px solid rgba(255,255,255,0.45)",
-              borderRight:  "1px solid rgba(255,255,255,0.22)",
-              borderBottom: "1px solid rgba(255,255,255,0.10)",
-              boxShadow:    "0 4px 14px rgba(74,100,144,0.12), inset 0 1px 0 rgba(255,255,255,0.80)",
-              color: "var(--text-2)",
+              background: "rgba(255,255,255,0.18)", backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)",
+              borderTop:"1px solid rgba(255,255,255,0.75)", borderLeft:"1px solid rgba(255,255,255,0.45)",
+              borderRight:"1px solid rgba(255,255,255,0.22)", borderBottom:"1px solid rgba(255,255,255,0.10)",
+              boxShadow:"0 4px 14px rgba(74,100,144,0.12), inset 0 1px 0 rgba(255,255,255,0.80)",
+              color:"var(--text-2)",
             }}>
-            <span>📄</span> CV ATS
-          </a>
-          <a
-            href="/cv/CV_Creative_Elbon_Aminalloh.pdf"
-            download="CV_Creative_Elbon_Aminalloh.pdf"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono transition-all duration-200 hover:scale-105 active:scale-95"
-            style={{
-              background: "rgba(74,100,144,0.15)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              borderTop:    "1px solid rgba(255,255,255,0.75)",
-              borderLeft:   "1px solid rgba(255,255,255,0.45)",
-              borderRight:  "1px solid rgba(255,255,255,0.22)",
-              borderBottom: "1px solid rgba(255,255,255,0.10)",
-              boxShadow:    "0 4px 14px rgba(74,100,144,0.15), inset 0 1px 0 rgba(255,255,255,0.70)",
-              color: "var(--primary)",
-            }}>
-            <span>🎨</span> CV Creative
+            <span>📄</span> Get in Touch (Resume)
           </a>
         </div>
 
-        {/* Stats */}
         <div className="h-in opacity-0 flex gap-8 pt-4 mt-1"
           style={{ borderTop:"1px solid rgba(255,255,255,0.28)" }}>
           {[{ v:"8+", l:"Rooms networked" },{ v:"3+", l:"Years experience" },{ v:"50+", l:"Issues resolved" }].map(s => (
@@ -154,25 +171,11 @@ export default function Hero() {
           ))}
         </div>
 
-        {/* Photo strip */}
         <div className="h-in opacity-0 mt-4">
           <p className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color:"var(--text-3)" }}>Gallery</p>
-          <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-6 sm:overflow-visible"
-            style={{ scrollbarWidth:"none" } as React.CSSProperties}>
-            {[
-              { src:"/images/profile/1.webp",                  label:"Profile",   icon:"👤" },
-              { src:"/images/projects/network/1.webp",         label:"AP Setup",  icon:"📡" },
-              { src:"/images/projects/network/2.webp",         label:"Cabling",   icon:"🔌" },
-              { src:"/images/projects/troubleshooting/1.webp", label:"Winbox",    icon:"🖥️" },
-              { src:"/images/projects/troubleshooting/2.webp", label:"Ping Test", icon:"⚡" },
-              { src:"/images/projects/web/1.webp",             label:"Ruz Store", icon:"🛒" },
-            ].map(p => (
-              <PhotoSlot key={p.label} {...p}
-                className="flex-shrink-0 w-24 sm:w-auto"
-                style={{ height:90 }} />
-            ))}
-          </div>
+          <GalleryStrip />
         </div>
+
       </div>
     </section>
   );

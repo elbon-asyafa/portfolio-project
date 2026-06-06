@@ -1,5 +1,6 @@
 import { scrollToTop } from "@/components/ScrollToTop";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 /* ── Window contents ── */
 function CertContent() {
@@ -189,14 +190,14 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
   if (!win.visible) return null;
 
   const glass: React.CSSProperties = {
-    background:         "rgba(255,255,255,0.58)",
-    backdropFilter:     "blur(28px) saturate(2.0) brightness(1.12)",
-    WebkitBackdropFilter:"blur(28px) saturate(2.0) brightness(1.12)",
-    borderTop:    "1px solid rgba(255,255,255,0.98)",
-    borderLeft:   "1px solid rgba(255,255,255,0.68)",
-    borderRight:  "1px solid rgba(255,255,255,0.38)",
-    borderBottom: isTouch ? "none" : "1px solid rgba(255,255,255,0.22)",
-    boxShadow:    "0 16px 64px rgba(74,100,144,0.20), 0 4px 16px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1.0), inset 0 -1px 0 rgba(255,255,255,0.35)",
+    background:          "var(--lg-bg)",
+    backdropFilter:      "blur(12px) saturate(1.8) brightness(1.04)",
+    WebkitBackdropFilter:"blur(12px) saturate(1.8) brightness(1.04)",
+    borderTop:    "1px solid var(--lg-bt)",
+    borderLeft:   "1px solid var(--lg-bs)",
+    borderRight:  "1px solid rgba(255,255,255,0.30)",
+    borderBottom: isTouch ? "none" : "1px solid var(--lg-bb)",
+    boxShadow:    "var(--lg-sh-lg), var(--lg-in)",
   };
 
   if (isTouch) {
@@ -270,16 +271,12 @@ function DockIcon({ icon, title, active, onClick }: { icon:string; title:string;
         onMouseEnter={() => setTip(true)}
         onMouseLeave={() => setTip(false)}
         aria-label={title}
-        className="w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] flex items-center justify-center text-xl transition-all duration-200 hover:scale-125 hover:-translate-y-2 active:scale-95"
+        className="glass-pill w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center text-lg transition-all duration-200 hover:scale-125 hover:-translate-y-2 active:scale-95"
         style={{
-          background:   active ? "rgba(74,100,144,0.14)" : "rgba(255,255,255,0.15)",
-          borderTop:    "1px solid rgba(255,255,255,0.80)",
-          borderLeft:   "1px solid rgba(255,255,255,0.45)",
-          borderRight:  "1px solid rgba(255,255,255,0.22)",
-          borderBottom: "1px solid rgba(255,255,255,0.10)",
+          background: active ? "rgba(74,100,144,0.18)" : "var(--lg-bg)",
           boxShadow: active
-            ? "0 0 0 1.5px rgba(74,100,144,0.25), inset 0 1px 0 rgba(255,255,255,0.70)"
-            : "none",
+            ? "0 0 0 2px rgba(74,100,144,0.35), var(--lg-sh-lg), var(--lg-in)"
+            : "var(--lg-sh), var(--lg-in)",
         }}>
         {icon}
       </button>
@@ -303,13 +300,27 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
   const [wins, setWins] = useState<Win[]>(
     WINDOWS_DEF.map((w, i) => ({ ...w, visible:false, x:60+i*40, y:90+i*30, z:400 }))
   );
-  const [show,    setShow]    = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
+  const [show,       setShow]       = useState(false);
+  const [isTouch,    setIsTouch]    = useState(false);
+  const [dockHidden, setDockHidden] = useState(false);
+  const atBottomRef = useRef(false);
 
   useEffect(() => {
     setIsTouch('ontouchstart' in window);
     const t = setTimeout(() => setShow(true), 2600);
-    return () => clearTimeout(t);
+    const onScroll = () => {
+      const dist = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      const isNowBottom = dist < 100;
+      const contactEl = document.getElementById("contact");
+      const inContact = contactEl
+        ? window.scrollY + window.innerHeight > contactEl.offsetTop + 80
+        : false;
+      const shouldHide = isNowBottom || inContact;
+      if (shouldHide && !atBottomRef.current) { atBottomRef.current = true; setDockHidden(true); }
+      if (!shouldHide) { atBottomRef.current = false; setDockHidden(false); }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   const anyOpen = wins.some(w => w.visible);
@@ -356,13 +367,28 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
       ))}
 
       {/* ── Liquid Glass Dock ── */}
-      <div className={inline ? "" : "fixed bottom-3 left-0 right-0 z-[500] flex justify-center pointer-events-none"}
+      <div className={inline ? "" : "fixed bottom-1 left-0 right-0 z-[500] flex justify-center pointer-events-none"}
         style={{
-          opacity: show ? 1 : 0,
-          animation: show ? "dockUp 0.55s cubic-bezier(0.34,1.4,0.64,1) both" : "none",
+          opacity: show && !dockHidden ? 1 : 0,
+          transform: dockHidden ? "translateY(120px)" : "translateY(0)",
+          transition: dockHidden
+            ? "transform 0.5s cubic-bezier(0.55,0,1,0.45), opacity 0.35s ease"
+            : "transform 0.7s cubic-bezier(0.34,1.6,0.64,1), opacity 0.4s ease",
+          pointerEvents: dockHidden ? "none" : undefined,
         }}>
-        <div className="pointer-events-auto" style={{ position: "relative" }}>
-        <div className="glass-pill relative flex items-end gap-2 px-4 py-3 rounded-[26px]">
+        <div className="pointer-events-auto" style={{ position: "relative", isolation: "isolate" }}>
+        <div className="relative flex items-end gap-1.5 px-3 py-2.5 rounded-[22px]"
+          style={{
+            background:          "var(--lg-bg)",
+            backdropFilter:      "blur(12px) saturate(1.8) brightness(1.04)",
+            WebkitBackdropFilter:"blur(12px) saturate(1.8) brightness(1.04)",
+            borderTop:    "1px solid var(--lg-bt)",
+            borderLeft:   "1px solid var(--lg-bs)",
+            borderRight:  "1px solid rgba(255,255,255,0.30)",
+            borderBottom: "1px solid var(--lg-bb)",
+            boxShadow:    "var(--lg-sh-lg), var(--lg-in)",
+            willChange:   "backdrop-filter",
+          }}>
           {wins.map(w => (
             <DockIcon key={w.id} icon={w.icon} title={w.title} active={w.visible} onClick={() => toggle(w.id)} />
           ))}
@@ -374,6 +400,40 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
         </div>
         </div>
       </div>
+
+      {/* Portal — renders on document.body, above all z-index */}
+      {createPortal(
+        <button
+          onClick={() => setDockHidden(false)}
+          style={{
+            position: "fixed",
+            bottom: dockHidden ? -10 : -60,
+            left: "50%",
+            transform: "translateX(-50%)",
+            transition: "bottom 0.55s cubic-bezier(0.34,1.4,0.64,1)",
+            zIndex: 2147483647,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 44,
+            height: 32,
+            borderRadius: "10px 10px 0 0",
+            background: "rgba(180,185,210,0.45)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.45)",
+            borderBottom: "none",
+            boxShadow: "0 -2px 12px rgba(74,100,144,0.18)",
+            cursor: "pointer",
+            userSelect: "none" as const,
+          }}
+        >
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+            <path d="M7 1L13 9H1L7 1Z" fill="rgba(50,60,100,0.85)" stroke="rgba(50,60,100,0.4)" strokeWidth="0.5"/>
+          </svg>
+        </button>,
+        document.body
+      )}
     </>
   );
 }

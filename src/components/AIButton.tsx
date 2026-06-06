@@ -20,7 +20,7 @@ function Dots() {
   );
 }
 
-export default function AIButton({ inline = false }: { inline?: boolean }) {
+export default function AIButton() {
   const [open,    setOpen]    = useState(false);
   const [msgs,    setMsgs]    = useState<Msg[]>([{
     role: "assistant",
@@ -54,7 +54,7 @@ export default function AIButton({ inline = false }: { inline?: boolean }) {
       const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
       if (!GEMINI_KEY) throw new Error("API key belum diisi. Buat file .env.local dan isi VITE_GEMINI_API_KEY");
       
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_KEY}`;
       const history = [...msgs, userMsg].map(m => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
@@ -236,19 +236,14 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
       <button
         onClick={() => setOpen(p => !p)}
         aria-label={open ? "Close AI" : "Open AI Assistant"}
-        className={`glass-pill ${
-          inline
-            ? ""
-            : "fixed z-[8000] md:fixed md:bottom-3 md:right-3"
-        } active:scale-95 transition-all duration-[250ms] flex items-center justify-center`}
+        className="glass-pill fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
         style={{
-          /* Desktop standalone: fixed bottom-right, pill shape */
-          ...(!inline ? { bottom: "0.75rem", right: "0.75rem" } : {}),
-          /* Square, same height as dock (dock py-3 + icon 44px = ~68px) */
-          width:  "68px",
-          height: "68px",
-          borderRadius: "26px",
-          background: open ? "rgba(74,100,144,0.14)" : "var(--lg-bg)",
+          bottom: "1.25rem",
+          right:  "1.25rem",
+          width:  "48px",
+          height: "48px",
+          borderRadius: "50%",
+          background: open ? "rgba(74,100,144,0.22)" : "var(--lg-bg)",
         }}
       >
         <span className="text-xl leading-none" style={{ color: open ? "var(--primary)" : "var(--primary)" }}>

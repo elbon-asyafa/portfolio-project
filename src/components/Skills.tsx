@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-const G=[{cat:"Networking",icon:"🌐",s:[{n:"MikroTik/RouterOS",v:85},{n:"LAN/WLAN Setup",v:90},{n:"DHCP Config",v:88},{n:"Cable Routing",v:80}]},{cat:"Diagnostics",icon:"🔍",s:[{n:"Winbox",v:85},{n:"Ping & Tracert",v:90},{n:"Fault Isolation",v:78},{n:"DHCP Debug",v:82}]},{cat:"Tools",icon:"🛠️",s:[{n:"Winbox UI",v:85},{n:"Windows OS",v:88},{n:"Android Hotspot",v:75},{n:"Basic CLI",v:70}]},{cat:"Soft Skills",icon:"🤝",s:[{n:"Problem Solving",v:92},{n:"Communication",v:88},{n:"Teamwork",v:85},{n:"Documentation",v:75}]}];
+const G=[{cat:"Networking",icon:"🌐",s:[{n:"MikroTik/RouterOS",v:85},{n:"LAN/WLAN Setup",v:90},{n:"DHCP Config",v:88},{n:"Cable Routing",v:80}]},{cat:"Diagnostics",icon:"🔍",s:[{n:"Winbox",v:85},{n:"Ping & Tracert",v:90},{n:"Fault Isolation",v:78},{n:"ONT/ODP Config",v:80}]},{cat:"Tools",icon:"🛠️",s:[{n:"Winbox UI",v:85},{n:"Windows OS",v:88},{n:"Android Hotspot",v:75},{n:"Fiber Splicing",v:78}]},{cat:"Soft Skills",icon:"🤝",s:[{n:"Problem Solving",v:92},{n:"Communication",v:88},{n:"Teamwork",v:85},{n:"Documentation",v:75}]},{cat:"Video Editing",icon:"🎬",s:[{n:"Premiere Pro",v:70},{n:"Alight Motion",v:78},{n:"CapCut",v:82},{n:"Basic Videography",v:75}]},{cat:"Photo Editing",icon:"📸",s:[{n:"Lightroom",v:75},{n:"Snapseed",v:80},{n:"Canva",v:72},{n:"Basic Photography",v:85}]}];
 
 function Bar({name,level}:{name:string;level:number}) {
   const r=useRef<HTMLDivElement>(null);
@@ -28,7 +28,7 @@ export default function Skills() {
           <h2 className="font-display text-3xl sm:text-4xl mb-3" style={{color:"var(--text-1)"}}>Skills & Tools</h2>
           <div className="w-10 h-0.5 rounded-full" style={{background:"linear-gradient(90deg,var(--primary),var(--secondary))"}} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {G.map(g=>(
             <div key={g.cat} className="reveal glass-card p-6 rounded-2xl">
               <div className="flex items-center gap-2 mb-5"><span className="text-xl">{g.icon}</span><h3 className="font-medium text-sm" style={{color:"var(--text-1)"}}>{g.cat}</h3></div>

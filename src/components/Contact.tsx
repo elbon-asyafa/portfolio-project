@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const LINKS = [
   { icon:"📸", label:"Instagram", val:"@asyworst",                        href:"https://instagram.com/asyworst",                              tint:"rgba(240,80,100,0.25)" },
-  { icon:"👔", label:"LinkedIn",  val:"linkedin.com/in/elbonaminalloh",   href:"https://www.linkedin.com/in/elbonaminalloh",                   tint:"rgba(74,100,144,0.25)" },
+  { icon:"👔", label:"LinkedIn",  val:"Elbon Aminalloh",   href:"https://www.linkedin.com/in/elbonaminalloh",                   tint:"rgba(74,100,144,0.25)" },
   { icon:"✉️", label:"Email",     val:"elbonaminalloh@gmail.com",         href:"mailto:elbonaminalloh@gmail.com",                             tint:"rgba(242,224,208,0.35)" },
 ];
 
@@ -69,8 +69,8 @@ export default function Contact() {
             {/* CV Download */}
             <div className="flex flex-wrap items-center justify-center gap-2">
               <a
-                href="/cv/CV_ATS_Elbon_Aminalloh.pdf"
-                download="CV_ATS_Elbon_Aminalloh.pdf"
+                href="/cv/Resume_Elbon_Aminalloh.pdf"
+                download="Resume_Elbon_Aminalloh.pdf"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95"
                 style={{
                   background:   "rgba(255,255,255,0.18)",
@@ -83,24 +83,7 @@ export default function Contact() {
                   boxShadow:    "0 4px 14px rgba(74,100,144,0.12), inset 0 1px 0 rgba(255,255,255,0.80)",
                   color: "var(--text-2)",
                 }}>
-                <span>📄</span> Download CV ATS
-              </a>
-              <a
-                href="/cv/CV_Creative_Elbon_Aminalloh.pdf"
-                download="CV_Creative_Elbon_Aminalloh.pdf"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{
-                  background:   "rgba(74,100,144,0.15)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  borderTop:    "1px solid rgba(255,255,255,0.75)",
-                  borderLeft:   "1px solid rgba(255,255,255,0.45)",
-                  borderRight:  "1px solid rgba(255,255,255,0.22)",
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-                  boxShadow:    "0 4px 14px rgba(74,100,144,0.15), inset 0 1px 0 rgba(255,255,255,0.70)",
-                  color: "var(--primary)",
-                }}>
-                <span>🎨</span> Download CV Creative
+                <span>📄</span> Get in Touch (Resume)
               </a>
             </div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
