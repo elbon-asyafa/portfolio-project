@@ -148,7 +148,7 @@ export default function Hero() {
         </div>
 
         <div className="h-in opacity-0 flex flex-wrap gap-2 -mt-1">
-          <a href="/cv/CV_ATS_Elbon_Aminalloh.pdf" download="CV_ATS_Elbon_Aminalloh.pdf"
+          <a href="/cv/Resume_Elbon_Aminalloh.pdf" download="Resume_Elbon_Aminalloh.pdf"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono transition-all duration-200 hover:scale-105 active:scale-95"
             style={{
               background: "rgba(255,255,255,0.18)", backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)",
