@@ -44,7 +44,7 @@ const SUPPORT = [
 ];
 
 const ACHIEVEMENTS = [
-  { icon: "🏆", label: "Ranked 1st in Class", sub: "2 consecutive semesters · Avg 87.5/100" },
+  { icon: "🏆", label: "Ranked 1st in Class", sub: "2 consecutive semesters · Avg 85.5/100" },
   { icon: "📋", label: "Certified PKL", sub: "Field Industrial Training" },
   { icon: "🎓", label: "Certified UKK", sub: "Vocational Competency Exam" },
 ];
