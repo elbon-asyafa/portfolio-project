@@ -105,6 +105,7 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
           width: "min(90vw, 360px)",
           maxHeight: "min(65vh, 480px)",
           opacity:       open ? 1 : 0,
+          visibility:    open ? "visible" : "hidden",
           transform:     open ? "translateY(0) scale(1)" : "translateY(12px) scale(0.96)",
           pointerEvents: open ? "auto" : "none",
           transition:    "opacity 0.25s ease, transform 0.28s cubic-bezier(0.34,1.4,0.64,1)",
@@ -236,14 +237,14 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
       <button
         onClick={() => setOpen(p => !p)}
         aria-label={open ? "Close AI" : "Open AI Assistant"}
-        className="glass-pill fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
+        className="ai-toggle glass-btn fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
         style={{
           bottom: "1.25rem",
           right:  "1.25rem",
           width:  "48px",
           height: "48px",
           borderRadius: "50%",
-          background: open ? "rgba(74,100,144,0.22)" : "var(--lg-bg)",
+          backgroundColor: open ? "rgba(74,100,144,0.22)" : undefined,
         }}
       >
         <span className="text-xl leading-none" style={{ color: open ? "var(--primary)" : "var(--primary)" }}>

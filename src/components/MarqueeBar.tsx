@@ -10,7 +10,7 @@ const TRACK = [...ITEMS,...ITEMS];
 export default function MarqueeBar() {
   return (
     <div className="relative w-full overflow-hidden py-3 select-none"
-      style={{ borderTop:"1px solid var(--lg-border-bot)", borderBottom:"1px solid var(--lg-border-bot)", background:"var(--lg-bg-card)", backdropFilter:"blur(6px)", WebkitBackdropFilter:"blur(6px)" }}>
+      style={{ borderTop:"1px solid var(--lg-border-bot)", borderBottom:"1px solid var(--lg-border-bot)", background:"var(--lg-bg-card)", }}>
       <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
         style={{ background:"linear-gradient(to right,var(--bg),transparent)" }} />
       <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"

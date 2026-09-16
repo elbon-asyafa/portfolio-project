@@ -32,13 +32,11 @@ function Lightbox({ img, onClose, onPrev, onNext }: {
     // z-[99999] — above everything
     <div className="fixed inset-0" style={{ zIndex: 99999 }}>
 
-      {/* Layer 1: dark blur backdrop */}
+      {/* Layer 1: dark scrim keeps the full viewport free of blur */}
       <div
         className="absolute inset-0"
         style={{
           background: "rgba(0,0,0,0.70)",
-          backdropFilter: "blur(16px) saturate(0.6)",
-          WebkitBackdropFilter: "blur(16px) saturate(0.6)",
           cursor: "zoom-out",
         }}
         onClick={onClose}

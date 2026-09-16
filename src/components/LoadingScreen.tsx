@@ -9,12 +9,12 @@ export default function LoadingScreen() {
   if (phase==="gone") return null;
   return (
     <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#EDD8C4 0%,#D4C4B8 35%,#A8B8D0 65%,#8BA4C8 100%)",transition:"opacity 0.55s ease",opacity:phase==="out"?0:1,pointerEvents:phase==="out"?"none":"auto"}}>
-      <div style={{position:"absolute",width:300,height:300,borderRadius:"50%",top:"15%",left:"5%",background:"radial-gradient(circle,rgba(242,224,208,0.55),transparent 70%)",filter:"blur(60px)"}}/>
-      <div style={{position:"absolute",width:250,height:250,borderRadius:"50%",bottom:"15%",right:"5%",background:"radial-gradient(circle,rgba(110,136,176,0.50),transparent 70%)",filter:"blur(60px)"}}/>
+      <div style={{position:"absolute",width:300,height:300,borderRadius:"50%",top:"15%",left:"5%",background:"radial-gradient(circle,rgba(242,224,208,0.55),transparent 70%)"}}/>
+      <div style={{position:"absolute",width:250,height:250,borderRadius:"50%",bottom:"15%",right:"5%",background:"radial-gradient(circle,rgba(110,136,176,0.50),transparent 70%)"}}/>
       <div style={{position:"relative",display:"flex",flexDirection:"column",alignItems:"center",gap:18}}>
         <div style={{position:"relative",animation:"ls_pulse 2s ease-in-out infinite"}}>
           <div style={{position:"absolute",inset:-4,borderRadius:20,border:"1px solid rgba(255,255,255,0.60)",animation:"ls_ring 2s ease-out infinite"}}/>
-          <div style={{width:68,height:68,borderRadius:18,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,0.35)",backdropFilter:"blur(20px)",borderTop:"1px solid rgba(255,255,255,0.90)",borderLeft:"1px solid rgba(255,255,255,0.58)",borderRight:"1px solid rgba(255,255,255,0.32)",borderBottom:"1px solid rgba(255,255,255,0.16)",boxShadow:"0 8px 32px rgba(74,100,144,0.18),inset 0 1px 0 rgba(255,255,255,0.92)"}}>
+          <div className="glass-card" style={{width:68,height:68,borderRadius:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
             <span style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:"#4A6490"}}>E</span>
           </div>
         </div>

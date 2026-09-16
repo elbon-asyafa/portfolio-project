@@ -71,16 +71,8 @@ export default function Contact() {
               <a
                 href="/cv/Resume_Elbon_Aminalloh.pdf"
                 download="Resume_Elbon_Aminalloh.pdf"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95"
+                className="glass-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95"
                 style={{
-                  background:   "rgba(255,255,255,0.18)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  borderTop:    "1px solid rgba(255,255,255,0.75)",
-                  borderLeft:   "1px solid rgba(255,255,255,0.45)",
-                  borderRight:  "1px solid rgba(255,255,255,0.22)",
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-                  boxShadow:    "0 4px 14px rgba(74,100,144,0.12), inset 0 1px 0 rgba(255,255,255,0.80)",
                   color: "var(--text-2)",
                 }}>
                 <span>📄</span> Get in Touch (Resume)

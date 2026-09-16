@@ -38,7 +38,7 @@ export default function About() {
                   background: "rgba(74,100,144,0.10)",
                 }}>
                 <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-30 select-none">👤</div>
-                <img
+                <img loading="lazy" decoding="async"
                   src="/images/profile/1.webp"
                   alt="Elbon Aminalloh"
                   className="absolute inset-0 w-full h-full object-cover z-10"
@@ -95,7 +95,7 @@ export default function About() {
                 }}>
                 {/* Emoji fallback */}
                 <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-30 select-none">👤</div>
-                <img
+                <img loading="lazy" decoding="async"
                   src="/images/profile/1.webp"
                   alt="Elbon Aminalloh"
                   className="absolute inset-0 w-full h-full object-cover z-10"
@@ -105,14 +105,12 @@ export default function About() {
             </div>
 
             {/* Highlight cards */}
-            <div className="reveal w-full p-8 rounded-[2rem]"
-              style={{ background: "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.6)", backdropFilter: "blur(8px)" }}>
+            <div className="reveal glass-card w-full p-8 rounded-[2rem]">
               <h4 className="font-display text-2xl mb-3" style={{ color: "var(--text-1)" }}>Problem Solving First</h4>
               <p className="text-sm opacity-80" style={{ color: "var(--text-2)" }}>I don't just set up networks; I identify bottlenecks, map out structured cabling, and build robust DHCP/WLAN configurations that last.</p>
             </div>
 
-            <div className="reveal w-full p-8 rounded-[2rem]"
-              style={{ background: "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.6)", backdropFilter: "blur(8px)" }}>
+            <div className="reveal glass-card w-full p-8 rounded-[2rem]">
               <h4 className="font-display text-2xl mb-3" style={{ color: "var(--text-1)" }}>End-to-End Delivery</h4>
               <p className="text-sm opacity-80" style={{ color: "var(--text-2)" }}>From climbing ladders and pulling Cat5e cables to typing out MikroTik firewall rules, I enjoy handling the entire stack of IT infrastructure.</p>
             </div>

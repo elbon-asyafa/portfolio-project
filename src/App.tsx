@@ -1,10 +1,9 @@
-import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import LoadingScreen from "@/components/LoadingScreen";
-import CustomCursor from "@/components/CustomCursor";
+import { useInertiaScroll } from "@/hooks/useInertiaScroll";
 import WindowPopups from "@/components/WindowPopups";
 import AIButton from "@/components/AIButton";
-import Hero from "@/components/Hero";
+import Hero, { GalleryStrip } from "@/components/Hero";
 import MarqueeBar from "@/components/MarqueeBar";
 import About from "@/components/About";
 import Projects from "@/components/Projects";
@@ -13,53 +12,27 @@ import Skills from "@/components/Skills";
 import Contact from "@/components/Contact";
 
 export default function App() {
-  useEffect(() => {
-    /* Inertia scroll — desktop only */
-    const isTouch = 'ontouchstart' in window;
-    if (isTouch) return;
-    let cur = window.scrollY, tgt = window.scrollY, raf: number;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      tgt = Math.max(0, Math.min(tgt + e.deltaY * 1.15, document.body.scrollHeight - window.innerHeight));
-    };
-    const loop = () => {
-      const d = tgt - cur;
-      if (Math.abs(d) > 1.0) { cur += d * 0.15; window.scrollTo(0, cur); }
-      raf = requestAnimationFrame(loop);
-    };
-    // Reset inertia target when scroll-to-top is called
-    const onResetTarget = () => { tgt = 0; cur = 0; };
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("reset-scroll-target", onResetTarget);
-    raf = requestAnimationFrame(loop);
-    return () => {
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("reset-scroll-target", onResetTarget);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  useInertiaScroll();
 
   return (
     <>
-      {/* Animated mesh gradient background */}
+      {/* Static mesh gradient preserves the original palette. */}
       <div className="mesh-bg" aria-hidden="true" />
 
-      {/* Glass overlay — amplifies glass depth */}
-      <div className="glass-overlay" aria-hidden="true" />
-
-      <CustomCursor />
       <LoadingScreen />
       <Navbar />
 
-      <main className="relative z-10 page-in">
+      <main className="portfolio-main">
         <Hero />
+        <div id="portfolio-content" className="content-sheet">
+        <div className="sp sp-inner content-gallery"><GalleryStrip /></div>
         <MarqueeBar />
         <About />
         <Projects />
         <Experience />
         <Skills />
         <Contact />
-      </main>
+
 
       <footer className="relative z-10 py-8" style={{ borderTop:"1px solid rgba(255,255,255,0.22)" }}>
         <div className="sp sp-inner flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -73,6 +46,8 @@ export default function App() {
           </button>
         </div>
       </footer>
+        </div>
+      </main>
 
       {/* ── Dock: always centered bottom ── */}
       <div className="fixed bottom-3 left-0 right-0 z-[500] flex items-end justify-center px-4 pointer-events-none">

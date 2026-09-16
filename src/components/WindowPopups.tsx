@@ -1,6 +1,5 @@
 import { scrollToTop } from "@/components/ScrollToTop";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 
 /* ── Window contents ── */
 function CertContent() {
@@ -189,20 +188,11 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
 
   if (!win.visible) return null;
 
-  const glass: React.CSSProperties = {
-    background:          "var(--lg-bg)",
-    backdropFilter:      "blur(12px) saturate(1.8) brightness(1.04)",
-    WebkitBackdropFilter:"blur(12px) saturate(1.8) brightness(1.04)",
-    borderTop:    "1px solid var(--lg-bt)",
-    borderLeft:   "1px solid var(--lg-bs)",
-    borderRight:  "1px solid rgba(255,255,255,0.30)",
-    borderBottom: isTouch ? "none" : "1px solid var(--lg-bb)",
-    boxShadow:    "var(--lg-sh-lg), var(--lg-in)",
-  };
+  const glass: React.CSSProperties = { borderBottom: isTouch ? "none" : undefined };
 
   if (isTouch) {
     return (
-      <div className="fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-3xl overflow-hidden select-none"
+      <div className="glass-pill fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-3xl overflow-hidden select-none"
         style={{ ...glass, maxHeight:"80vh", animation:"sheetUp 0.30s cubic-bezier(0.34,1.2,0.64,1) both" }}
         onMouseDown={() => onFocus(win.id)}>
         {/* Drag handle */}
@@ -227,7 +217,7 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
   return (
     <div className="fixed select-none" onMouseDown={() => onFocus(win.id)}
       style={{ left:pos.x, top:pos.y, zIndex:win.z, width:"clamp(270px,85vw,360px)", animation:"winPop 0.28s cubic-bezier(0.34,1.4,0.64,1) both" }}>
-      <div className="rounded-2xl overflow-hidden" style={glass}>
+      <div className="glass-pill rounded-2xl overflow-hidden" style={glass}>
         {/* Traffic lights + title */}
         <div className="flex items-center gap-2 px-4 py-2.5 cursor-grab active:cursor-grabbing"
           style={{ borderBottom:"1px solid rgba(255,255,255,0.28)", background:"rgba(255,255,255,0.10)" }}
@@ -263,7 +253,7 @@ function DockIcon({ icon, title, active, onClick }: { icon:string; title:string;
       <div className="absolute -top-9 left-1/2 pointer-events-none hidden sm:block"
         style={{ transform:`translateX(-50%) translateY(${tip?0:4}px)`, opacity:tip?1:0, transition:"all 0.18s ease" }}>
         <span className="whitespace-nowrap font-mono text-[10px] px-2.5 py-1 rounded-lg block"
-          style={{ background:"rgba(30,38,64,0.88)", color:"#fff", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,0.15)" }}>
+          style={{ background:"rgba(30,38,64,0.88)", color:"#fff", border:"1px solid rgba(255,255,255,0.15)" }}>
           {title}
         </span>
       </div>
@@ -271,12 +261,12 @@ function DockIcon({ icon, title, active, onClick }: { icon:string; title:string;
         onMouseEnter={() => setTip(true)}
         onMouseLeave={() => setTip(false)}
         aria-label={title}
-        className="glass-pill w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center text-lg transition-all duration-200 hover:scale-125 hover:-translate-y-2 active:scale-95"
+        className="glass-btn w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center text-lg transition-all duration-200 hover:scale-125 hover:-translate-y-2 active:scale-95"
         style={{
-          background: active ? "rgba(74,100,144,0.18)" : "var(--lg-bg)",
+          backgroundColor: active ? "rgba(74,100,144,0.18)" : undefined,
           boxShadow: active
             ? "0 0 0 2px rgba(74,100,144,0.35), var(--lg-sh-lg), var(--lg-in)"
-            : "var(--lg-sh), var(--lg-in)",
+            : "var(--glass-edge), var(--glass-shadow)",
         }}>
         {icon}
       </button>
@@ -290,7 +280,7 @@ function DockIcon({ icon, title, active, onClick }: { icon:string; title:string;
 function Backdrop({ show, onClick }: { show:boolean; onClick:()=>void }) {
   return (
     <div className="fixed inset-0 z-[399]"
-      style={{ background:"rgba(30,38,64,0.28)", backdropFilter:"blur(3px)", WebkitBackdropFilter:"blur(3px)", opacity:show?1:0, pointerEvents:show?"auto":"none", transition:"opacity 0.22s ease" }}
+      style={{ background:"rgba(30,38,64,0.28)", opacity:show?1:0, pointerEvents:show?"auto":"none", transition:"opacity 0.22s ease" }}
       onClick={onClick} />
   );
 }
@@ -302,25 +292,31 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
   );
   const [show,       setShow]       = useState(false);
   const [isTouch,    setIsTouch]    = useState(false);
-  const [dockHidden, setDockHidden] = useState(false);
-  const atBottomRef = useRef(false);
+  const [dockHidden, setDockHidden] = useState(true);
+
 
   useEffect(() => {
     setIsTouch('ontouchstart' in window);
     const t = setTimeout(() => setShow(true), 2600);
-    const onScroll = () => {
-      const dist = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      const isNowBottom = dist < 100;
-      const contactEl = document.getElementById("contact");
-      const inContact = contactEl
-        ? window.scrollY + window.innerHeight > contactEl.offsetTop + 80
-        : false;
-      const shouldHide = isNowBottom || inContact;
-      if (shouldHide && !atBottomRef.current) { atBottomRef.current = true; setDockHidden(true); }
-      if (!shouldHide) { atBottomRef.current = false; setDockHidden(false); }
+    let contentStart = 0;
+    const onScroll = () => setDockHidden(window.scrollY < contentStart);
+    const measure = () => {
+      const content = document.getElementById("portfolio-content");
+      contentStart = content ? Math.max(0, content.offsetTop - 100) : Infinity;
+      onScroll();
     };
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
+    window.addEventListener("resize", measure);
+    const observer = new ResizeObserver(measure);
+    const hero = document.getElementById("hero");
+    if (hero) observer.observe(hero);
+    return () => {
+      clearTimeout(t);
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
   const anyOpen = wins.some(w => w.visible);
@@ -367,28 +363,18 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
       ))}
 
       {/* ── Liquid Glass Dock ── */}
-      <div className={inline ? "" : "fixed bottom-1 left-0 right-0 z-[500] flex justify-center pointer-events-none"}
+      <div aria-hidden={!show || dockHidden} className={inline ? "portfolio-dock" : "portfolio-dock fixed bottom-1 left-0 right-0 z-[500] flex justify-center pointer-events-none"}
         style={{
           opacity: show && !dockHidden ? 1 : 0,
+          visibility: show && !dockHidden ? "visible" : "hidden",
           transform: dockHidden ? "translateY(120px)" : "translateY(0)",
           transition: dockHidden
-            ? "transform 0.5s cubic-bezier(0.55,0,1,0.45), opacity 0.35s ease"
-            : "transform 0.7s cubic-bezier(0.34,1.6,0.64,1), opacity 0.4s ease",
-          pointerEvents: dockHidden ? "none" : undefined,
+            ? "transform 0.32s ease, opacity 0.2s ease, visibility 0s linear 0.32s"
+            : "transform 0.42s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease, visibility 0s",
+          pointerEvents: !show || dockHidden ? "none" : undefined,
         }}>
         <div className="pointer-events-auto" style={{ position: "relative", isolation: "isolate" }}>
-        <div className="relative flex items-end gap-1.5 px-3 py-2.5 rounded-[22px]"
-          style={{
-            background:          "var(--lg-bg)",
-            backdropFilter:      "blur(12px) saturate(1.8) brightness(1.04)",
-            WebkitBackdropFilter:"blur(12px) saturate(1.8) brightness(1.04)",
-            borderTop:    "1px solid var(--lg-bt)",
-            borderLeft:   "1px solid var(--lg-bs)",
-            borderRight:  "1px solid rgba(255,255,255,0.30)",
-            borderBottom: "1px solid var(--lg-bb)",
-            boxShadow:    "var(--lg-sh-lg), var(--lg-in)",
-            willChange:   "backdrop-filter",
-          }}>
+        <div className="glass-pill relative flex items-end gap-1.5 px-3 py-2.5 rounded-[22px]">
           {wins.map(w => (
             <DockIcon key={w.id} icon={w.icon} title={w.title} active={w.visible} onClick={() => toggle(w.id)} />
           ))}
@@ -401,39 +387,6 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
         </div>
       </div>
 
-      {/* Portal — renders on document.body, above all z-index */}
-      {createPortal(
-        <button
-          onClick={() => setDockHidden(false)}
-          style={{
-            position: "fixed",
-            bottom: dockHidden ? -10 : -60,
-            left: "50%",
-            transform: "translateX(-50%)",
-            transition: "bottom 0.55s cubic-bezier(0.34,1.4,0.64,1)",
-            zIndex: 2147483647,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 44,
-            height: 32,
-            borderRadius: "10px 10px 0 0",
-            background: "rgba(180,185,210,0.45)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.45)",
-            borderBottom: "none",
-            boxShadow: "0 -2px 12px rgba(74,100,144,0.18)",
-            cursor: "pointer",
-            userSelect: "none" as const,
-          }}
-        >
-          <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-            <path d="M7 1L13 9H1L7 1Z" fill="rgba(50,60,100,0.85)" stroke="rgba(50,60,100,0.4)" strokeWidth="0.5"/>
-          </svg>
-        </button>,
-        document.body
-      )}
     </>
   );
 }
