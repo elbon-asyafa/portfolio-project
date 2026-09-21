@@ -15,6 +15,13 @@ export default function Navbar() {
   const header = useRef<HTMLElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
 
+  const scrollHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent("reset-scroll-target"));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setActive("#hero");
+  };
+
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 8);
     update();
@@ -43,9 +50,9 @@ export default function Navbar() {
     <header ref={header} className={`portfolio-header${scrolled ? " is-scrolled" : ""}`}>
       <div className="portfolio-nav">
         <nav className="nav-links" aria-label="Main navigation">
-          {NAV.map(({ label, href }) => <a key={href} href={href} aria-current={active === href ? "location" : undefined}>{label}</a>)}
+          {NAV.map(({ label, href }) => <a key={href} href={href} onClick={label === "Home" ? scrollHome : undefined} aria-current={active === href ? "location" : undefined}>{label}</a>)}
         </nav>
-        <a href="#hero" className="nav-mobile-home" aria-label="Elbon Asyafa — Home">Elbon.</a>
+        <a href="#hero" className="nav-mobile-home" onClick={scrollHome} aria-label="Elbon Asyafa — Home">Elbon.</a>
         <div className="nav-tools">
           <div className="nav-socials">
             <a href="https://instagram.com/asyworst" target="_blank" rel="noopener noreferrer" aria-label="Instagram">

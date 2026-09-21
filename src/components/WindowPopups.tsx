@@ -1,5 +1,6 @@
 import { scrollToTop } from "@/components/ScrollToTop";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 /* ── Window contents ── */
 function CertContent() {
@@ -162,29 +163,75 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
   const posRef = useRef({ x:win.x, y:win.y });
   const drag   = useRef({ on:false, ox:0, oy:0 });
   const [isTouch, setIsTouch] = useState(false);
+  const [sheetOffset, setSheetOffset] = useState(0);
+  const sheetDrag = useRef({ on:false, startY:0, offsetY:0 });
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimer = useRef<number>();
 
-  useEffect(() => { setIsTouch('ontouchstart' in window); }, []);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsTouch(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
-  const onBarDown = useCallback((e: React.MouseEvent) => {
-    if (isTouch || (e.target as HTMLElement).closest("button,a")) return;
+  const onBarPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (isTouch || e.button !== 0 || (e.target as HTMLElement).closest("button,a")) return;
     drag.current = { on:true, ox:e.clientX-posRef.current.x, oy:e.clientY-posRef.current.y };
     onFocus(win.id);
+    e.currentTarget.setPointerCapture(e.pointerId);
     e.preventDefault();
   }, [win.id, onFocus, isTouch]);
 
-  useEffect(() => {
-    const mv = (e: MouseEvent) => {
-      if (!drag.current.on) return;
-      const nx = e.clientX - drag.current.ox;
-      const ny = Math.max(0, e.clientY - drag.current.oy);
-      posRef.current = { x:nx, y:ny };
-      setPos({ x:nx, y:ny });
-    };
-    const up = () => { drag.current.on = false; };
-    window.addEventListener("mousemove", mv);
-    window.addEventListener("mouseup", up);
-    return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); };
-  }, []);
+  const onBarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag.current.on) return;
+    const x = e.clientX - drag.current.ox;
+    const y = Math.max(0, e.clientY - drag.current.oy);
+    posRef.current = { x, y };
+    setPos({ x, y });
+  };
+
+  const requestClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    closeTimer.current = window.setTimeout(() => onClose(win.id), 240);
+  }, [isClosing, onClose, win.id]);
+
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+
+  const onBarPointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag.current.on) return;
+    if (e.clientY >= window.innerHeight - 88) requestClose();
+    drag.current.on = false;
+  };
+
+  const onSheetPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") return;
+    sheetDrag.current = { on:true, startY:e.clientY, offsetY:0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    onFocus(win.id);
+  };
+
+  const onSheetPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!sheetDrag.current.on) return;
+    const offsetY = Math.max(0, e.clientY - sheetDrag.current.startY);
+    sheetDrag.current.offsetY = offsetY;
+    setSheetOffset(offsetY);
+  };
+
+  const onSheetPointerEnd = () => {
+    if (!sheetDrag.current.on) return;
+    const shouldClose = sheetDrag.current.offsetY > 110;
+    sheetDrag.current.on = false;
+    setSheetOffset(0);
+    if (shouldClose) requestClose();
+  };
+
+  const closeFromControl = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    requestClose();
+  };
 
   if (!win.visible) return null;
 
@@ -193,17 +240,17 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
   if (isTouch) {
     return (
       <div className="glass-pill fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-3xl overflow-hidden select-none"
-        style={{ ...glass, maxHeight:"80vh", animation:"sheetUp 0.30s cubic-bezier(0.34,1.2,0.64,1) both" }}
-        onMouseDown={() => onFocus(win.id)}>
+        style={{ ...glass, maxHeight:"80vh", animation:"sheetUp 0.30s cubic-bezier(0.34,1.2,0.64,1) both", transform:isClosing ? "translateY(100%)" : `translateY(${sheetOffset}px)`, opacity:isClosing ? 0 : 1, transition: isClosing ? "transform 0.24s ease, opacity 0.2s ease" : sheetDrag.current.on ? "none" : "transform 0.2s ease" }}>
         {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center py-4" style={{ touchAction:"none" }}
+          onPointerDown={onSheetPointerDown} onPointerMove={onSheetPointerMove} onPointerUp={onSheetPointerEnd} onPointerCancel={onSheetPointerEnd}>
           <div className="w-10 h-1 rounded-full" style={{ background:"rgba(74,100,144,0.28)" }} />
         </div>
         {/* Title */}
         <div className="flex items-center px-5 pb-3 pt-1" style={{ borderBottom:"1px solid rgba(255,255,255,0.28)" }}>
           <span className="text-lg mr-2">{win.icon}</span>
           <span className="font-medium text-sm flex-1" style={{ color:"var(--text-1)" }}>{win.title}</span>
-          <button onClick={() => onClose(win.id)} className="w-8 h-8 rounded-xl flex items-center justify-center text-xl hover:opacity-70 transition-opacity"
+          <button onPointerDown={e => e.stopPropagation()} onClick={closeFromControl} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl hover:opacity-70 transition-opacity"
             style={{ background:"rgba(255,255,255,0.25)", color:"var(--text-2)" }}>✕</button>
         </div>
         <div className="overflow-y-auto p-4" style={{ WebkitOverflowScrolling:"touch", maxHeight:"65vh" }}>
@@ -215,25 +262,28 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
 
   /* Desktop draggable window */
   return (
-    <div className="fixed select-none" onMouseDown={() => onFocus(win.id)}
-      style={{ left:pos.x, top:pos.y, zIndex:win.z, width:"clamp(270px,85vw,360px)", animation:"winPop 0.28s cubic-bezier(0.34,1.4,0.64,1) both" }}>
+    <div className="fixed select-none" onMouseDown={() => { if (!isClosing) onFocus(win.id); }}
+      style={{ left:pos.x, top:pos.y, zIndex:win.z, width:"clamp(270px,85vw,360px)", animation:isClosing ? "winClose 0.24s ease forwards" : "winPop 0.28s cubic-bezier(0.34,1.4,0.64,1) both" }}>
       <div className="glass-pill rounded-2xl overflow-hidden" style={glass}>
         {/* Traffic lights + title */}
-        <div className="flex items-center gap-2 px-4 py-2.5 cursor-grab active:cursor-grabbing"
-          style={{ borderBottom:"1px solid rgba(255,255,255,0.28)", background:"rgba(255,255,255,0.10)" }}
-          onMouseDown={onBarDown}>
+        <div className="window-titlebar flex items-center gap-2 px-4 py-2.5 cursor-grab active:cursor-grabbing"
+          style={{ borderBottom:"1px solid rgba(255,255,255,0.28)", background:"rgba(255,255,255,0.10)", touchAction:"none" }}
+          onPointerDown={onBarPointerDown}
+          onPointerMove={onBarPointerMove}
+          onPointerUp={onBarPointerEnd}
+          onPointerCancel={onBarPointerEnd}>
           <div className="flex gap-1.5 shrink-0">
-            <button onClick={() => onClose(win.id)} className="w-3 h-3 rounded-full bg-[#FF5F57] flex items-center justify-center group">
+            <button onPointerDown={e => e.stopPropagation()} onClick={closeFromControl} className="hidden">
               <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-red-900">✕</span>
             </button>
-            <div className="w-3 h-3 rounded-full bg-[#FEBC2E] opacity-70" />
-            <div className="w-3 h-3 rounded-full bg-[#28C840] opacity-40" />
+            <div className="hidden" />
+            <div className="hidden" />
           </div>
           <span className="flex-1 text-center text-xs font-medium pointer-events-none truncate" style={{ color:"var(--text-2)" }}>
             {win.icon} {win.title}
           </span>
-          <button onClick={() => onClose(win.id)}
-            className="w-6 h-6 shrink-0 rounded-lg flex items-center justify-center text-sm hover:opacity-70 transition-opacity"
+          <button onPointerDown={e => e.stopPropagation()} onClick={closeFromControl}
+            className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-base hover:opacity-70 transition-opacity"
             style={{ background:"rgba(255,255,255,0.22)", color:"var(--text-2)" }}>✕</button>
         </div>
         <div className="p-4 overflow-y-auto" style={{ maxHeight:"60vh" }}>
@@ -245,7 +295,7 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
 }
 
 /* ── Dock icon ── */
-function DockIcon({ icon, title, active, onClick }: { icon:string; title:string; active:boolean; onClick:()=>void }) {
+function DockIcon({ icon, title, active, onClick }: { icon:string; title:string; active:boolean; onClick?:()=>void }) {
   const [tip, setTip] = useState(false);
   return (
     <div className="relative flex flex-col items-center">
@@ -261,7 +311,7 @@ function DockIcon({ icon, title, active, onClick }: { icon:string; title:string;
         onMouseEnter={() => setTip(true)}
         onMouseLeave={() => setTip(false)}
         aria-label={title}
-        className="glass-btn w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center text-lg transition-all duration-200 hover:scale-125 hover:-translate-y-2 active:scale-95"
+        className="glass-btn w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center text-lg transition-all duration-200 active:scale-95"
         style={{
           backgroundColor: active ? "rgba(74,100,144,0.18)" : undefined,
           boxShadow: active
@@ -293,13 +343,22 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
   const [show,       setShow]       = useState(false);
   const [isTouch,    setIsTouch]    = useState(false);
   const [dockHidden, setDockHidden] = useState(true);
+  const [dockManuallyOpen, setDockManuallyOpen] = useState(false);
 
 
   useEffect(() => {
-    setIsTouch('ontouchstart' in window);
+    const query = window.matchMedia("(max-width: 640px)");
+    const updatePointer = () => setIsTouch(query.matches);
+    updatePointer();
+    query.addEventListener("change", updatePointer);
     const t = setTimeout(() => setShow(true), 2600);
     let contentStart = 0;
-    const onScroll = () => setDockHidden(window.scrollY < contentStart);
+    const onScroll = () => {
+      const pageBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+      const shouldAutoHide = window.scrollY < contentStart || window.scrollY >= pageBottom - 64;
+      setDockHidden(shouldAutoHide && !dockManuallyOpen);
+      if (!shouldAutoHide) setDockManuallyOpen(false);
+    };
     const measure = () => {
       const content = document.getElementById("portfolio-content");
       contentStart = content ? Math.max(0, content.offsetTop - 100) : Infinity;
@@ -314,10 +373,11 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
     return () => {
       clearTimeout(t);
       observer.disconnect();
+      query.removeEventListener("change", updatePointer);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", measure);
     };
-  }, []);
+  }, [dockManuallyOpen]);
 
   const anyOpen = wins.some(w => w.visible);
 
@@ -350,17 +410,33 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
     <>
       <style>{`
         @keyframes winPop  { from{opacity:0;transform:scale(0.88) translateY(14px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes winClose { to{opacity:0;transform:scale(0.96) translateY(24px)} }
         @keyframes sheetUp { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
         @keyframes dockUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      {/* Mobile backdrop */}
-      <Backdrop show={isTouch && anyOpen} onClick={closeAll} />
+      {createPortal(
+        <>
+          <Backdrop show={isTouch && anyOpen} onClick={closeAll} />
+          {wins.map(w => (
+            <WinPanel key={w.id} win={w} onClose={close} onFocus={focus} />
+          ))}
+        </>,
+        document.body,
+      )}
 
-      {/* Windows */}
-      {wins.map(w => (
-        <WinPanel key={w.id} win={w} onClose={close} onFocus={focus} />
-      ))}
+      <button
+        type="button"
+        aria-label="Show dock"
+        onClick={() => { setDockManuallyOpen(true); setDockHidden(false); }}
+        className="dock-reveal glass-btn fixed bottom-3 left-1/2 z-[501] -translate-x-1/2 rounded-full px-3 py-1.5 text-xs tracking-[0.28em]"
+        style={{
+          opacity: show && dockHidden ? 1 : 0,
+          visibility: show && dockHidden ? "visible" : "hidden",
+          pointerEvents: show && dockHidden ? "auto" : "none",
+          transition: "opacity 0.2s ease, visibility 0s linear 0.2s",
+        }}
+      >•••</button>
 
       {/* ── Liquid Glass Dock ── */}
       <div aria-hidden={!show || dockHidden} className={inline ? "portfolio-dock" : "portfolio-dock fixed bottom-1 left-0 right-0 z-[500] flex justify-center pointer-events-none"}

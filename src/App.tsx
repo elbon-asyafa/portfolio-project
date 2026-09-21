@@ -10,9 +10,16 @@ import Projects from "@/components/Projects";
 import Experience from "@/components/Experience";
 import Skills from "@/components/Skills";
 import Contact from "@/components/Contact";
+import { useLayoutEffect } from "react";
 
 export default function App() {
   useInertiaScroll();
+
+  useLayoutEffect(() => {
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    window.dispatchEvent(new CustomEvent("reset-scroll-target"));
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <>
