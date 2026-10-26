@@ -14,7 +14,7 @@ function Dots() {
     <div className="flex gap-1 items-center py-0.5">
       {[0, 1, 2].map(i => (
         <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce"
-          style={{ background: "var(--primary)", opacity: 0.7, animationDelay: `${i * 160}ms`, animationDuration: "0.9s" }} />
+          style={{ background: "var(--text-2)", opacity: 0.7, animationDelay: `${i * 160}ms`, animationDuration: "0.9s" }} />
       ))}
     </div>
   );
@@ -30,16 +30,41 @@ export default function AIButton() {
   const [input,   setInput]   = useState("");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
+  const [overHero, setOverHero] = useState(true);
   const endRef   = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 350);
+    if (!open) return;
+    const timer = window.setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 350);
+    return () => window.clearTimeout(timer);
   }, [open]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs, loading]);
+    if (open && messagesRef.current) {
+      messagesRef.current.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [msgs, loading, open]);
+
+  useEffect(() => {
+    const update = () => {
+      const panel = panelRef.current?.getBoundingClientRect();
+      const content = document.getElementById("portfolio-content")?.getBoundingClientRect();
+      if (panel && content) setOverHero(content.top > panel.top + panel.height / 2);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const observer = new ResizeObserver(update);
+    if (panelRef.current) observer.observe(panelRef.current);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      observer.disconnect();
+    };
+  }, [open]);
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -51,10 +76,11 @@ export default function AIButton() {
     setLoading(true);
 
     try {
-      const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+      const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+      const model = import.meta.env.VITE_GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
       if (!GEMINI_KEY) throw new Error("API key belum diisi. Buat file .env.local dan isi VITE_GEMINI_API_KEY");
       
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_KEY}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
       const history = [...msgs, userMsg].map(m => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
@@ -65,7 +91,7 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
 
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: sys }] },
           contents: history,
@@ -89,13 +115,12 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
     }
   };
 
-  // glass styles handled by CSS class glass-pill
-
   return (
     <>
       {/* ── Chat panel ── */}
       <div
-        className="glass-pill fixed z-[7999] flex flex-col rounded-3xl overflow-hidden"
+        ref={panelRef}
+        className={`ai-panel glass-pill glass-surface fixed z-[7999] flex flex-col rounded-[28px] overflow-hidden${overHero ? " is-over-hero" : ""}`}
         onWheel={e => e.stopPropagation()}
         onTouchMove={e => e.stopPropagation()}
         style={{
@@ -122,7 +147,7 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm" style={{ color: "var(--text-1)" }}>AI Assistant</p>
-            <p className="font-mono text-[10px] text-green-600">Online &middot; Gemini</p>
+            <p className="ai-status font-mono text-[10px] text-green-600">Online &middot; Gemini</p>
           </div>
           <button onClick={() => setOpen(false)} aria-label="Close chat"
             className="w-7 h-7 shrink-0 rounded-xl flex items-center justify-center text-xl leading-none hover:opacity-70 active:scale-90 transition-all"
@@ -133,7 +158,8 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
 
         {/* Message list */}
         <div
-          className="flex-1 overflow-y-auto px-3 py-3 space-y-3"
+          ref={messagesRef}
+          className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3"
           style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
           onWheel={e => {
             // Prevent wheel from propagating to the page inertia scroll
@@ -160,7 +186,7 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
             </div>
           )}
           {error && (
-            <div className="px-3 py-2 rounded-xl text-xs font-mono"
+            <div className="ai-error px-3 py-2 rounded-xl text-xs font-mono"
               style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.22)", color: "#b91c1c" }}>
               {error}
             </div>
@@ -237,14 +263,13 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
       <button
         onClick={() => setOpen(p => !p)}
         aria-label={open ? "Close AI" : "Open AI Assistant"}
-        className="ai-toggle glass-btn fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
+        className="ai-toggle glass-btn glass-surface fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
         style={{
           bottom: "1.25rem",
           right:  "1.25rem",
           width:  "48px",
           height: "48px",
           borderRadius: "50%",
-          backgroundColor: open ? "rgba(74,100,144,0.22)" : undefined,
         }}
       >
         <span className="text-xl leading-none" style={{ color: open ? "var(--primary)" : "var(--primary)" }}>
