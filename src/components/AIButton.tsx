@@ -24,7 +24,7 @@ export default function AIButton() {
   const [open,    setOpen]    = useState(false);
   const [msgs,    setMsgs]    = useState<Msg[]>([{
     role: "assistant",
-    content: "Hi! I'm Elbon's AI assistant. Ask me anything — about Elbon, networking, tech, or any topic!",
+    content: "Hi! I'm Elbon's AI assistant. Ask me about his portfolio, projects, experience, or technical IT topics like networking and programming.",
     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   }]);
   const [input,   setInput]   = useState("");
@@ -76,33 +76,17 @@ export default function AIButton() {
     setLoading(true);
 
     try {
-      const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY?.trim();
-      const model = import.meta.env.VITE_GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
-      if (!GEMINI_KEY) throw new Error("API key belum diisi. Buat file .env.local dan isi VITE_GEMINI_API_KEY");
-      
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-      const history = [...msgs, userMsg].map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      }));
-
-      const sys = `You are a helpful AI assistant on Elbon's portfolio website. 
-About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspih Rajeg, major TKJ. Skills: MikroTik RouterOS, LAN/WLAN setup, DHCP. You can answer ANY question freely. Keep answers concise.`;
-
-      const res = await fetch(url, {
+      const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: sys }] },
-          contents: history,
-          generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
+          messages: [...msgs.slice(1), userMsg].slice(-12).map(({ role, content }) => ({ role, content: content.slice(0, 2000) })),
         }),
       });
-      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || `Error ${res.status}`);
-      
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, could not generate a response.";
+      if (!res.ok) throw new Error(data.error || "Asisten sedang tidak tersedia.");
+      if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error("Respons asisten tidak valid.");
+      const reply = data.reply;
       setMsgs(p => [...p, {
         role: "assistant",
         content: reply,
@@ -231,7 +215,8 @@ About Elbon: Full name Elbon Aminalloh Asyafa Lubis Prasetyo. School: SMKS Yaspi
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-              placeholder="Ask anything..."
+              placeholder="Ask about Elbon or IT topics..."
+              maxLength={2000}
               disabled={loading}
               className="flex-1 bg-transparent text-sm outline-none disabled:opacity-50 min-w-0"
               style={{ color: "var(--text-1)", fontFamily: "inherit" }}
