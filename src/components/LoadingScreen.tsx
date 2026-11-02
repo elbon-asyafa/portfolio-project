@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { copy, useLanguage } from "@/contexts/LanguageContext";
 export default function LoadingScreen() {
+  const { language } = useLanguage();
   const [phase, setPhase] = useState<"in"|"out"|"gone">("in");
   useEffect(() => {
     const t1=setTimeout(()=>setPhase("out"),1700);
@@ -20,7 +22,7 @@ export default function LoadingScreen() {
         </div>
         <div style={{textAlign:"center"}}>
           <p style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"#1E2640",animation:"ls_fadeup 0.7s ease 0.25s both",margin:0}}>Elbon</p>
-          <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#7080A8",letterSpacing:"0.18em",textTransform:"uppercase",animation:"ls_fadeup 0.7s ease 0.4s both",margin:"4px 0 0"}}>Network Technician</p>
+          <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#7080A8",letterSpacing:"0.18em",textTransform:"uppercase",animation:"ls_fadeup 0.7s ease 0.4s both",margin:"4px 0 0"}}>{copy(language, "Network Technician", "Teknisi Jaringan")}</p>
         </div>
         <div style={{width:120,height:2,borderRadius:999,overflow:"hidden",background:"rgba(74,100,144,0.15)",animation:"ls_fadeup 0.5s ease 0.35s both"}}>
           <div style={{height:"100%",borderRadius:999,background:"linear-gradient(90deg,#F2E0D0,#C89878,#6E88B0,#4A6490)",backgroundSize:"300% 100%",animation:"ls_bar 1.55s ease 0.1s forwards,ls_shift 1.4s linear 0.1s infinite"}}/>

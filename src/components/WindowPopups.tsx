@@ -2,9 +2,11 @@ import { scrollToTop } from "@/components/ScrollToTop";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useMobileScrollLock } from "@/hooks/useMobileScrollLock";
+import { copy, useLanguage } from "@/contexts/LanguageContext";
 
 /* ── Window contents ── */
 function CertContent() {
+  const { language } = useLanguage();
   return (
     <div className="space-y-3">
       <div className="text-center p-4 rounded-2xl" style={{ background:"rgba(255,255,255,0.22)", border:"1px solid rgba(255,255,255,0.40)" }}>
@@ -13,9 +15,9 @@ function CertContent() {
         <p className="font-mono text-xs mt-1" style={{ color:"var(--text-3)" }}>SMKS Yaspih Rajeg · TKJ</p>
       </div>
       {[
-        { l:"School",    v:"SMKS Yaspih Rajeg" },
-        { l:"Major",     v:"Teknik Komputer & Jaringan" },
-        { l:"Location",  v:"Rajeg, Banten" },
+        { l:copy(language,"School","Sekolah"),    v:"SMKS Yaspih Rajeg" },
+        { l:copy(language,"Major","Jurusan"),     v:"Teknik Komputer & Jaringan" },
+        { l:copy(language,"Location","Lokasi"),  v:"Rajeg, Banten" },
         { l:"Instagram", v:"@asyworst" },
         { l:"LinkedIn",    v:"elbonaminalloh" },
       ].map(r => (
@@ -29,6 +31,7 @@ function CertContent() {
 }
 
 function PhotosContent() {
+  const { language } = useLanguage();
   const cats = [
     { label:"Profile", slots:[
       { src:"/images/profile/1.webp", l:"Profile Photo" },
@@ -53,13 +56,13 @@ function PhotosContent() {
     <div className="space-y-4">
       {cats.map(cat => (
         <div key={cat.label}>
-          <p className="font-mono text-[10px] uppercase tracking-widest mb-2" style={{ color:"var(--primary)" }}>{cat.label}</p>
+          <p className="font-mono text-[10px] uppercase tracking-widest mb-2" style={{ color:"var(--primary)" }}>{language === "id" ? ({ Profile:"Profil", "Network Installation":"Instalasi Jaringan", "Winbox & Troubleshooting":"Winbox & Troubleshooting", "Ruz Stationary Website":"Situs RuzStore" } as Record<string,string>)[cat.label] : cat.label}</p>
           <div className="grid grid-cols-3 gap-1.5">
             {cat.slots.map((s, i) => (
               <div key={i} className="relative aspect-square rounded-xl overflow-hidden group img-zoom"
                 style={{ background:"rgba(255,255,255,0.22)", border:"1px solid rgba(255,255,255,0.50)" }}>
                 <div className="absolute inset-0 flex items-center justify-center text-lg opacity-20">📷</div>
-                <img src={s.src} alt={s.l} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover z-10"
+                <img src={s.src} alt={language === "id" ? ({ "Profile Photo":"Foto profil", "AP Setup":"Pemasangan access point", Cabling:"Penarikan kabel", Config:"Konfigurasi", "Ping Test":"Uji ping", "Fault Check":"Pemeriksaan gangguan", Homepage:"Beranda", Products:"Produk", Reviews:"Ulasan" } as Record<string,string>)[s.l] ?? s.l : s.l} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover z-10"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-1.5"
                   style={{ background:"linear-gradient(to top,rgba(0,0,0,0.40),transparent)" }}>
@@ -75,6 +78,7 @@ function PhotosContent() {
 }
 
 function SkillsContent() {
+  const { language } = useLanguage();
   const skills = [
     { n:"MikroTik / Winbox", v:85 },
     { n:"LAN / WLAN Setup",  v:90 },
@@ -84,7 +88,7 @@ function SkillsContent() {
   ];
   return (
     <div className="space-y-4">
-      <p className="font-mono text-[10px] uppercase tracking-widest" style={{ color:"var(--primary)" }}>Skill Overview</p>
+      <p className="font-mono text-[10px] uppercase tracking-widest" style={{ color:"var(--primary)" }}>{copy(language,"Skill Overview","Ringkasan Keahlian")}</p>
       {skills.map(s => (
         <div key={s.n}>
           <div className="flex justify-between mb-1">
@@ -101,6 +105,7 @@ function SkillsContent() {
 }
 
 function ContactContent() {
+  const { language } = useLanguage();
   const [cp, setCp] = useState(false);
   const links = [
     { icon:"📸", label:"Instagram", val:"@asyworst",        href:"https://instagram.com/asyworst" },
@@ -134,7 +139,7 @@ function ContactContent() {
           borderBottom: "1px solid rgba(255,255,255,0.12)",
           color: "var(--primary)",
         }}>
-        {cp ? "✓ Copied!" : "📋 Copy Email"}
+        {cp ? copy(language,"✓ Copied!","✓ Tersalin!") : `📋 ${copy(language,"Copy Email","Salin Email")}`}
       </button>
     </div>
   );
@@ -148,6 +153,11 @@ const WINDOWS_DEF = [
   { id:"contact", title:"Contact",     icon:"✉️" },
 ];
 
+function localizedWindowTitle(title: string, language: "en" | "id") {
+  if (language === "en") return title;
+  return ({ "About Elbon":"Tentang Elbon", Gallery:"Galeri", Skills:"Keahlian", Contact:"Kontak", "Back to Top":"Kembali ke atas" } as Record<string,string>)[title] ?? title;
+}
+
 const CONTENTS: Record<string, React.ReactNode> = {
   about:   <CertContent />,
   photos:  <PhotosContent />,
@@ -160,6 +170,8 @@ let ZZ = 400;
 
 /* ── Draggable window / mobile bottom sheet ── */
 function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>void; onFocus:(id:string)=>void }) {
+  const { language } = useLanguage();
+  const title = localizedWindowTitle(win.title, language);
   const [pos,  setPos]  = useState({ x:win.x, y:win.y });
   const posRef = useRef({ x:win.x, y:win.y });
   const drag   = useRef({ on:false, ox:0, oy:0 });
@@ -240,7 +252,7 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
 
   if (isTouch) {
     return (
-      <div className="dock-window glass-pill glass-surface fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-[28px] overflow-hidden select-none" role="dialog" aria-label={win.title} aria-modal="true"
+      <div className="dock-window glass-pill glass-surface fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-[28px] overflow-hidden select-none" role="dialog" aria-label={title} aria-modal="true"
         style={{ ...glass, maxHeight:"80dvh", animation:isClosing ? "none" : "sheetUp 0.30s cubic-bezier(0.34,1.2,0.64,1)", transform:isClosing ? "translateY(100%)" : `translateY(${sheetOffset}px)`, opacity:isClosing ? 0 : 1, transition: isClosing ? "transform 0.24s ease, opacity 0.2s ease" : sheetDrag.current.on ? "none" : "transform 0.2s ease" }}>
         {/* Drag handle */}
         <div className="flex justify-center py-4" style={{ touchAction:"none" }}
@@ -250,8 +262,8 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
         {/* Title */}
         <div className="flex items-center px-5 pb-3 pt-1" style={{ borderBottom:"1px solid rgba(255,255,255,0.28)" }}>
           <span className="text-lg mr-2">{win.icon}</span>
-          <span className="font-medium text-sm flex-1" style={{ color:"var(--text-1)" }}>{win.title}</span>
-          <button aria-label={`Close ${win.title}`} onPointerDown={e => e.stopPropagation()} onClick={closeFromControl} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl hover:opacity-70 transition-opacity"
+          <span className="font-medium text-sm flex-1" style={{ color:"var(--text-1)" }}>{title}</span>
+          <button aria-label={`${copy(language,"Close","Tutup")} ${title}`} onPointerDown={e => e.stopPropagation()} onClick={closeFromControl} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl hover:opacity-70 transition-opacity"
             style={{ background:"rgba(255,255,255,0.25)", color:"var(--text-2)" }}>✕</button>
         </div>
         <div className="dock-window-content min-h-0 overflow-y-auto p-4" style={{ WebkitOverflowScrolling:"touch", maxHeight:"65dvh" }}>
@@ -263,7 +275,7 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
 
   /* Desktop draggable window */
   return (
-    <div className="dock-window glass-pill glass-surface fixed select-none rounded-[28px] overflow-hidden" role="dialog" aria-label={win.title} onMouseDown={() => { if (!isClosing) onFocus(win.id); }}
+    <div className="dock-window glass-pill glass-surface fixed select-none rounded-[28px] overflow-hidden" role="dialog" aria-label={title} onMouseDown={() => { if (!isClosing) onFocus(win.id); }}
       style={{ ...glass, left:pos.x, top:pos.y, zIndex:win.z, width:"clamp(270px,85vw,360px)", animation:isClosing ? "winClose 0.24s ease forwards" : "winPop 0.28s cubic-bezier(0.34,1.4,0.64,1)" }}>
         {/* Traffic lights + title */}
         <div className="window-titlebar flex items-center gap-2 px-4 py-2.5 cursor-grab active:cursor-grabbing"
@@ -280,9 +292,9 @@ function WinPanel({ win, onClose, onFocus }: { win:Win; onClose:(id:string)=>voi
             <div className="hidden" />
           </div>
           <span className="flex-1 text-center text-xs font-medium pointer-events-none truncate" style={{ color:"var(--text-2)" }}>
-            {win.icon} {win.title}
+            {win.icon} {title}
           </span>
-          <button aria-label={`Close ${win.title}`} onPointerDown={e => e.stopPropagation()} onClick={closeFromControl}
+          <button aria-label={`${copy(language,"Close","Tutup")} ${title}`} onPointerDown={e => e.stopPropagation()} onClick={closeFromControl}
             className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-base hover:opacity-70 transition-opacity"
             style={{ background:"rgba(255,255,255,0.22)", color:"var(--text-2)" }}>✕</button>
         </div>
@@ -336,6 +348,7 @@ function Backdrop({ show, onClick }: { show:boolean; onClick:()=>void }) {
 
 /* ── Main ── */
 export default function WindowPopups({ inline = false }: { inline?: boolean }) {
+  const { language } = useLanguage();
   const [wins, setWins] = useState<Win[]>(
     WINDOWS_DEF.map((w, i) => ({ ...w, visible:false, x:60+i*40, y:90+i*30, z:400 }))
   );
@@ -427,7 +440,7 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
 
       <button
         type="button"
-        aria-label="Show dock"
+        aria-label={copy(language, "Show dock", "Tampilkan dock")}
         onClick={() => { setDockManuallyOpen(true); setDockHidden(false); }}
         className="dock-reveal glass-btn glass-surface fixed bottom-3 left-1/2 z-[501] -translate-x-1/2 rounded-full px-3 py-1.5 text-xs tracking-[0.28em]"
         style={{
@@ -452,13 +465,13 @@ export default function WindowPopups({ inline = false }: { inline?: boolean }) {
         <div className="pointer-events-auto" style={{ position: "relative", isolation: "isolate" }}>
         <div className="glass-pill glass-surface relative flex items-end gap-1.5 px-3 py-2.5 rounded-[28px]">
           {wins.map(w => (
-            <DockIcon key={w.id} icon={w.icon} title={w.title} active={w.visible} onClick={() => toggle(w.id)} />
+            <DockIcon key={w.id} icon={w.icon} title={localizedWindowTitle(w.title, language)} active={w.visible} onClick={() => toggle(w.id)} />
           ))}
 
           <div className="w-px h-7 mx-1 self-center rounded-full" style={{ background:"rgba(255,255,255,0.40)" }} />
 
           {/* Back to top */}
-          <DockIcon icon="🚀" title="Back to Top" active={false} onClick={() => scrollToTop()} />
+          <DockIcon icon="🚀" title={localizedWindowTitle("Back to Top", language)} active={false} onClick={() => scrollToTop()} />
         </div>
         </div>
       </div>

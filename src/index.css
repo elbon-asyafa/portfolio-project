@@ -39,44 +39,13 @@
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
-    /* Base fallback while mesh renders */
+    /* Base color behind the hero and content surfaces */
     background: #D8C8BC;
   }
   ::selection { background: rgba(110,136,176,0.30); }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(110,136,176,0.35); border-radius: 999px; }
-}
-
-/* ══════════════════════════════════════════
-   ANIMATED MESH GRADIENT BACKGROUND
-   Slow, aesthetic — 6 colour orbs drifting
-══════════════════════════════════════════ */
-.mesh-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  /* CSS mesh using radial gradients + animation */
-  background:
-    radial-gradient(ellipse 70% 55% at 15% 20%,  rgba(242,224,208,0.90) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 50% at 85% 15%,  rgba(110,136,176,0.70) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 70% 80%,  rgba(74,100,144,0.55)  0%, transparent 60%),
-    linear-gradient(135deg, #EDD8C4 0%, #C8B8A8 30%, #A8B8D0 65%, #8AA0C0 100%);
-  background-size: 100% 100%;
-  /* Keep the palette static to avoid repainting glass layers every frame. */
-}
-
-/* Overlay — extra depth layer */
-.mesh-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 40% 35% at 60% 30%,  rgba(167,139,250,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 40% at 25% 65%,  rgba(34,211,238,0.12)  0%, transparent 55%),
-    radial-gradient(ellipse 35% 40% at 25% 65%,  rgba(34,211,238,0.12)  0%, transparent 55%);
-  opacity: 0.5;
 }
 
 /* One optical surface per control group; highlights do not need GPU filters. */
@@ -350,7 +319,6 @@
   height: max(720px, 100svh); padding: 110px 0 52px;
   background: #4d74b2 url('/images/backgrounds/hero-blue.webp') center / cover no-repeat;
   color: #fff;
-  will-change: transform;
 }
 .hero-layout { height: 100%; min-height: 0; }
 .hero-copy { position: relative; z-index: 1; }
@@ -361,7 +329,7 @@
 .hero-actions .glass-btn { color: #fff; background-color: rgba(21,49,97,.26); }
 .hero-scroll-cue { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; font-size: 12px; color: #fff; padding: 8px 16px; border-radius: 20px; white-space: nowrap; }
 .content-sheet {
-  position: relative; z-index: 2; isolation: isolate; transform: translateZ(0); border-radius: 36px 36px 0 0;
+  position: relative; z-index: 2; isolation: isolate; border-radius: 36px 36px 0 0;
   box-shadow: 0 -18px 50px rgba(18,35,65,.22); border-top: 1px solid rgba(255,255,255,.75);
   background:
     radial-gradient(ellipse 70% 55% at 15% 20%,rgba(242,224,208,.9),transparent 65%),
@@ -371,7 +339,7 @@
   background-color: #C8B8A8;
 }
 .content-gallery { padding-top: 32px; padding-bottom: 32px; }
-section[id], #portfolio-content { scroll-margin-top: 100px; }
+section[id], #portfolio-content, #achievements { scroll-margin-top: 100px; }
 /* Fade a separate glass surface, rather than interpolating expensive blur. */
 .portfolio-nav { position: relative; isolation: isolate; color: #fff; transition: color .25s ease; }
 .is-scrolled .portfolio-nav { color: #4a5d78; }
@@ -419,7 +387,7 @@ section[id], #portfolio-content { scroll-margin-top: 100px; }
 .hero-location { margin-left: auto; margin-right: auto; }
 .hero-actions { justify-content: center; }
 .hero-portrait { align-self: center; justify-self: center; max-height: 660px; max-width: 520px; min-width: 0; }
-.hero-portrait img {
+.hero-portrait img.hero-ascii-art {
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, rgba(0,0,0,.85) 74%, rgba(0,0,0,.4) 88%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 62%, rgba(0,0,0,.85) 74%, rgba(0,0,0,.4) 88%, transparent 100%);
 }
@@ -477,6 +445,14 @@ section[id], #portfolio-content { scroll-margin-top: 100px; }
   .hero-name, .hero-description, .hero-location, .hero-actions, .hero-portrait, .hero-scroll-cue { animation: none; }
   .nav-toggle, .nav-dropdown, .nav-dropdown a, .hamburger-lines span, .portfolio-dock { transition: none !important; }
 }
+.hero-portrait { position: relative; }
+.hero-portrait img.hero-ascii-art {
+  position: relative; z-index: 1; display: block; width: 100%; height: 100%;
+  object-fit: contain; object-position: center bottom;
+}
+@media (max-width: 640px) {
+  .hero-portrait img.hero-ascii-art { height: auto; }
+}
 .hero-scroll-cue { bottom: 108px; }
 @media (max-width: 640px) {
   .hero-scroll-cue { display: none; }
@@ -511,7 +487,7 @@ section[id], #portfolio-content { scroll-margin-top: 100px; }
   .menu-is-open .nav-glass::before, .menu-is-open .nav-glass::after { display: none; }
   .menu-is-open .nav-socials { visibility: hidden; }
   .nav-menu-heading { padding: 16px 0 20px; margin-bottom: 8px; }
-  .nav-menu-heading > span:last-child { display: none; }
+  .nav-menu-heading > span:nth-of-type(2) { display: none; }
   .nav-dropdown a { min-height: 66px; gap: 18px; padding: 14px 0; border: 0; border-bottom: 1px solid rgba(74,93,120,.12); border-radius: 0; }
   .nav-menu-label { font-family: 'DM Serif Display', serif; font-size: clamp(26px, 7vw, 36px); font-weight: 400; }
   .nav-menu-arrow { width: 24px; height: 24px; }
@@ -528,10 +504,16 @@ section[id], #portfolio-content { scroll-margin-top: 100px; }
 }
 .nav-glass, .glass-surface, .glass-surface:hover {
   background: rgba(255,255,255,.05);
-  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,.3);
   box-shadow: 0 8px 32px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(255,255,255,.1);
 }
+@media (max-width: 640px) {
+  .nav-glass, .glass-surface, .glass-surface:hover {
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+}
+.portfolio-main { background: #c8b8a8; }
 .dock-window, .dock-window-content { overscroll-behavior: contain; }
 .ai-panel.is-over-hero {
   --text-1: #f8fbff; --text-2: #e8f0ff; --text-3: #d2e0f5;
@@ -550,4 +532,21 @@ section[id], #portfolio-content { scroll-margin-top: 100px; }
   .ai-panel.is-over-hero { --text-1: #1e2640; --text-2: #3a4870; --text-3: #526482; }
   .ai-panel.is-over-hero .ai-status { color: #16734b; }
   .ai-panel.is-over-hero .ai-error { color: #b91c1c !important; }
+}
+
+.language-toggle {
+  display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;
+  padding: 3px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px;
+  background: rgba(255,255,255,.08); color: inherit;
+}
+.language-toggle button {
+  min-width: 30px; min-height: 28px; padding: 0 6px; border: 0; border-radius: 999px;
+  background: transparent; color: inherit; font: 600 9px 'JetBrains Mono', monospace; cursor: pointer;
+}
+.language-toggle button[aria-pressed='true'] { background: rgba(255,255,255,.78); color: #405b81; box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
+.language-toggle button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.language-toggle-mobile { display: none; }
+@media (max-width: 640px) {
+  .nav-tools .language-toggle-desktop { display: none; }
+  .nav-menu-heading .language-toggle-mobile { display: inline-flex; margin-left: auto; }
 }

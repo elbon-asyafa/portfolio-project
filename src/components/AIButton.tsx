@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { copy, useLanguage } from "@/contexts/LanguageContext";
 
 interface Msg { role: "user" | "assistant"; content: string; time: string; }
 
@@ -21,10 +22,15 @@ function Dots() {
 }
 
 export default function AIButton() {
+  const { language } = useLanguage();
+  const suggestions = language === "id"
+    ? ["Siapa Elbon?", "Apa itu MikroTik?", "Tentang proyek jaringan", "Bagaimana cara kerja DHCP?"]
+    : SUGGESTIONS;
+  const greeting = copy(language, "Hi! I'm Elbon's AI assistant. Ask me about his portfolio, projects, experience, or technical IT topics like networking and programming.", "Hai! Saya asisten AI Elbon. Tanyakan tentang portofolio, proyek, pengalaman, atau topik teknis seperti jaringan dan pemrograman.");
   const [open,    setOpen]    = useState(false);
   const [msgs,    setMsgs]    = useState<Msg[]>([{
     role: "assistant",
-    content: "Hi! I'm Elbon's AI assistant. Ask me about his portfolio, projects, experience, or technical IT topics like networking and programming.",
+    content: greeting,
     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   }]);
   const [input,   setInput]   = useState("");
@@ -35,6 +41,10 @@ export default function AIButton() {
   const panelRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMsgs(current => current.length === 1 ? [{ role:"assistant", content:greeting, time:current[0].time }] : current);
+  }, [greeting]);
 
   useEffect(() => {
     if (!open) return;
@@ -84,8 +94,8 @@ export default function AIButton() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Asisten sedang tidak tersedia.");
-      if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error("Respons asisten tidak valid.");
+      if (!res.ok) throw new Error(data.error || copy(language, "Assistant is unavailable right now.", "Asisten sedang tidak tersedia."));
+      if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error(copy(language, "The assistant returned an invalid response.", "Respons asisten tidak valid."));
       const reply = data.reply;
       setMsgs(p => [...p, {
         role: "assistant",
@@ -93,7 +103,7 @@ export default function AIButton() {
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Connection error");
+      setError(e instanceof Error ? e.message : copy(language, "Connection error", "Koneksi bermasalah"));
     } finally {
       setLoading(false);
     }
@@ -130,10 +140,10 @@ export default function AIButton() {
               style={{ border: "2.5px solid rgba(255,255,255,0.85)" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm" style={{ color: "var(--text-1)" }}>AI Assistant</p>
+            <p className="font-medium text-sm" style={{ color: "var(--text-1)" }}>{copy(language, "AI Assistant", "Asisten AI")}</p>
             <p className="ai-status font-mono text-[10px] text-green-600">Online &middot; Gemini</p>
           </div>
-          <button onClick={() => setOpen(false)} aria-label="Close chat"
+          <button onClick={() => setOpen(false)} aria-label={copy(language, "Close chat", "Tutup obrolan")}
             className="w-7 h-7 shrink-0 rounded-xl flex items-center justify-center text-xl leading-none hover:opacity-70 active:scale-90 transition-all"
             style={{ background: "rgba(255,255,255,0.25)", color: "var(--text-2)" }}>
             &times;
@@ -181,7 +191,7 @@ export default function AIButton() {
         {/* Suggestion chips */}
         {msgs.length <= 2 && (
           <div className="px-3 pb-2 flex flex-wrap gap-1.5 shrink-0">
-            {SUGGESTIONS.map(s => (
+            {suggestions.map(s => (
               <button key={s} onClick={() => send(s)} disabled={loading}
                 className="text-[11px] px-2.5 py-1 rounded-full active:scale-95 transition-all duration-150 disabled:opacity-40"
                 style={{
@@ -215,7 +225,7 @@ export default function AIButton() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-              placeholder="Ask about Elbon or IT topics..."
+              placeholder={copy(language, "Ask about Elbon or IT topics...", "Tanyakan tentang Elbon atau topik TI...")}
               maxLength={2000}
               disabled={loading}
               className="flex-1 bg-transparent text-sm outline-none disabled:opacity-50 min-w-0"
@@ -224,7 +234,7 @@ export default function AIButton() {
             <button
               onClick={() => send(input)}
               disabled={loading || !input.trim()}
-              aria-label="Send"
+              aria-label={copy(language, "Send", "Kirim")}
               className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-40 active:scale-90 transition-all"
               style={{
                 background:   "rgba(74,100,144,0.50)",
@@ -247,7 +257,7 @@ export default function AIButton() {
       {/* ── Floating toggle button ── */}
       <button
         onClick={() => setOpen(p => !p)}
-        aria-label={open ? "Close AI" : "Open AI Assistant"}
+        aria-label={open ? copy(language, "Close AI", "Tutup AI") : copy(language, "Open AI Assistant", "Buka Asisten AI")}
         className="ai-toggle glass-btn glass-surface fixed z-[8000] active:scale-95 transition-all duration-[250ms] flex items-center justify-center"
         style={{
           bottom: "1.25rem",

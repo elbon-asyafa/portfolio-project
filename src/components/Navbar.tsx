@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useMobileScrollLock } from "@/hooks/useMobileScrollLock";
+import { copy, LanguageToggle, useLanguage } from "@/contexts/LanguageContext";
 
 const NAV = [
   { label: "Home", href: "#hero" },
   { label: "About", href: "#about" },
   { label: "Projects", href: "#projects" },
+  { label: "Achievements", href: "#achievements" },
   { label: "Contact", href: "#contact" },
 ];
 const MENU = [
   ...NAV.slice(0, 3),
+  NAV[3],
   { label: "Experience", href: "#experience" },
   { label: "Skills", href: "#skills" },
-  NAV[3],
+  NAV[4],
 ];
 
 export default function Navbar() {
+  const { language } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("#hero");
   const [open, setOpen] = useState(false);
@@ -67,10 +71,10 @@ export default function Navbar() {
     <header ref={header} className={`portfolio-header${scrolled ? " is-scrolled" : ""}${open ? " menu-is-open" : ""}`}>
       <div className="portfolio-nav">
         <div className="nav-brand-group nav-glass">
-          <nav className="nav-links" aria-label="Main navigation">
-            {NAV.map(({ label, href }) => <a key={href} href={href} onClick={label === "Home" ? scrollHome : undefined} aria-current={active === href ? "location" : undefined}>{label}</a>)}
+          <nav className="nav-links" aria-label={copy(language, "Main navigation", "Navigasi utama")}>
+            {NAV.map(({ label, href }) => <a key={href} href={href} onClick={label === "Home" ? scrollHome : undefined} aria-current={active === href ? "location" : undefined}>{localizedNav(label, language)}</a>)}
           </nav>
-          <a href="#hero" className="nav-mobile-home" onClick={scrollHome} aria-label="Elbon Asyafa — Home">Elbon.</a>
+          <a href="#hero" className="nav-mobile-home" onClick={scrollHome} aria-label={copy(language, "Elbon Asyafa — Home", "Elbon Asyafa — Beranda")}>Elbon.</a>
         </div>
         <div className="nav-tools nav-glass">
           <div className="nav-socials">
@@ -84,15 +88,16 @@ export default function Navbar() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
             </a>
           </div>
-          <button ref={toggle} className="nav-toggle" onClick={() => setOpen(value => !value)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="portfolio-menu">
+          <LanguageToggle className="language-toggle-desktop" />
+          <button ref={toggle} className="nav-toggle" onClick={() => setOpen(value => !value)} aria-label={open ? copy(language, "Close menu", "Tutup menu") : copy(language, "Open menu", "Buka menu")} aria-expanded={open} aria-controls="portfolio-menu">
             <span className="hamburger-lines" aria-hidden="true"><span /><span /><span /></span>
           </button>
         </div>
       </div>
-      <nav id="portfolio-menu" className={`nav-dropdown${open ? " is-open" : ""}`} aria-hidden={!open} aria-label="All sections" onBlur={event => {
+      <nav id="portfolio-menu" className={`nav-dropdown${open ? " is-open" : ""}`} aria-hidden={!open} aria-label={copy(language, "All sections", "Semua bagian")} onBlur={event => {
         if (!header.current?.contains(event.relatedTarget)) setOpen(false);
       }}>
-        <div className="nav-menu-heading"><span>Explore</span><span>Elbon.</span></div>
+        <div className="nav-menu-heading"><span>{copy(language, "Explore", "Jelajahi")}</span><span>Elbon.</span><LanguageToggle className="language-toggle-mobile" /></div>
         {MENU.map(({ label, href }, index) => (
           <a key={href} href={href} tabIndex={open ? 0 : -1}
             style={{ transitionDelay: open ? `${index * 24}ms` : "0ms" }}
@@ -102,11 +107,20 @@ export default function Navbar() {
               toggle.current?.focus();
             }} aria-current={active === href ? "location" : undefined}>
             <span className="nav-menu-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-            <span className="nav-menu-label">{label}</span>
+            <span className="nav-menu-label">{localizedNav(label, language)}</span>
             <svg className="nav-menu-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M5 10h10m-4-4 4 4-4 4" /></svg>
           </a>
         ))}
       </nav>
     </header>
   );
+}
+
+function localizedNav(label: string, language: "en" | "id") {
+  if (language === "en") return label;
+  const labels: Record<string, string> = {
+    Home: "Beranda", About: "Tentang", Projects: "Proyek", Achievements: "Pencapaian",
+    Experience: "Pengalaman", Skills: "Keahlian", Contact: "Kontak",
+  };
+  return labels[label] ?? label;
 }

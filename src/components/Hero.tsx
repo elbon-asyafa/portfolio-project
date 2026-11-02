@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { copy, useLanguage } from "@/contexts/LanguageContext";
 
 
 function PhotoSlot({ src, label, icon, className, style }: {
@@ -78,23 +79,25 @@ export function GalleryStrip() {
 }
 
 export default function Hero() {
+  const { language } = useLanguage();
   return (
     <section id="hero" className="hero-section">
       <div className="sp sp-inner hero-layout">
         <div className="hero-copy">
           <h1 className="hero-name font-display"><span>Elbon</span><span>Asyafa</span></h1>
-          <p className="hero-description">Network Technician &amp; Problem Solver</p>
-          <p className="hero-location">Based in Indonesia. Building connections that work.</p>
+          <p className="hero-description">{copy(language, "Network Technician & Problem Solver", "Teknisi Jaringan & Pemecah Masalah")}</p>
+          <p className="hero-location">{copy(language, "Based in Indonesia. Building connections that work.", "Berbasis di Indonesia. Membangun koneksi yang andal.")}</p>
           <div className="hero-actions">
-            <a href="#projects" className="glass-btn-primary rounded-full px-5 py-3 text-sm">View projects</a>
-            <a href="/cv/Resume_Elbon_Aminalloh.pdf" download="Resume_Elbon_Aminalloh.pdf" className="glass-btn rounded-full px-5 py-3 text-sm">Download resume</a>
+            <a href="#projects" className="glass-btn-primary rounded-full px-5 py-3 text-sm">{copy(language, "View projects", "Lihat proyek")}</a>
+            <a href="/cv/CV_Kreatif_Elbon_Aminalloh_Asyafa_Lubis_Prasetyo.pdf" download="CV_Kreatif_Elbon_Aminalloh_Asyafa_Lubis_Prasetyo.pdf" className="glass-btn rounded-full px-5 py-3 text-sm">{copy(language, "Download CV", "Unduh CV")}</a>
+            <a href="/cv/Resume_Elbon_Aminalloh.pdf" download="Resume_Elbon_Aminalloh.pdf" className="glass-btn rounded-full px-5 py-3 text-sm">{copy(language, "Download resume", "Unduh resume")}</a>
           </div>
         </div>
         <figure className="hero-portrait">
-          <img src="/images/profile/hero-ascii.png" alt="Elbon Asyafa dengan separuh kiri potret bergaya ASCII biru dan putih" width="1086" height="1448" decoding="async" fetchPriority="high" />
+          <img className="hero-ascii-art" src="/images/profile/hero-ascii.webp" alt={copy(language, "Portrait of Elbon Asyafa", "Potret Elbon Asyafa")} width="1086" height="1448" decoding="async" fetchPriority="high" />
         </figure>
       </div>
-      <a className="hero-scroll-cue" href="#portfolio-content">Explore the portfolio <span aria-hidden="true">↓</span></a>
+      <a className="hero-scroll-cue" href="#portfolio-content">{copy(language, "Explore the portfolio", "Jelajahi portofolio")} <span aria-hidden="true">↓</span></a>
     </section>
   );
 }

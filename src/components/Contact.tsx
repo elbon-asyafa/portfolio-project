@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { copy, useLanguage } from "@/contexts/LanguageContext";
 
 const LINKS = [
   { icon:"📸", label:"Instagram", val:"@asyworst",                        href:"https://instagram.com/asyworst",                              tint:"rgba(240,80,100,0.25)" },
@@ -7,6 +8,7 @@ const LINKS = [
 ];
 
 export default function Contact() {
+  const { language } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   const [cp, setCp] = useState(false);
   useEffect(() => {
@@ -25,13 +27,13 @@ export default function Contact() {
       <div className="sp sp-inner">
         <div className="max-w-2xl mx-auto text-center">
           <div className="reveal mb-10">
-            <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color:"var(--primary)" }}>Let&apos;s Connect</p>
+            <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color:"var(--primary)" }}>{copy(language, "Let's Connect", "Mari Terhubung")}</p>
             <h2 className="font-display leading-tight mb-4" style={{ fontSize:"clamp(1.8rem,5vw,3rem)", color:"var(--text-1)" }}>
-              Have a network problem?{" "}
-              <span className="gradient-text">I&apos;ve got it.</span>
+              {copy(language, "Have a network problem?", "Ada masalah jaringan?")}{" "}
+              <span className="gradient-text">{copy(language, "I've got it.", "Saya siap membantu.")}</span>
             </h2>
             <p className="leading-relaxed" style={{ color:"var(--text-2)" }}>
-              Need a full network setup, troubleshooting support, or just want to talk infrastructure — I&apos;m ready.
+              {copy(language, "Need a full network setup, troubleshooting support, or just want to talk infrastructure — I'm ready.", "Butuh instalasi jaringan, bantuan troubleshooting, atau ingin berdiskusi soal infrastruktur? Hubungi saya.")}
             </p>
           </div>
 
@@ -57,31 +59,35 @@ export default function Contact() {
                 onClick={() => { navigator.clipboard.writeText("elbonaminalloh@gmail.com"); setCp(true); setTimeout(()=>setCp(false),2000); }}
                 className="glass-btn inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-mono"
                 style={{ color:"var(--text-2)" }}>
-                {cp ? "✓ Copied!" : "📋 Copy email"}
+                {cp ? copy(language, "✓ Copied!", "✓ Tersalin!") : `📋 ${copy(language, "Copy email", "Salin email")}`}
               </button>
               <a
                 href="mailto:elbonaminalloh@gmail.com"
                 className="glass-btn inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-mono"
                 style={{ color:"var(--text-2)" }}>
-                ✉️ Send email
+                ✉️ {copy(language, "Send email", "Kirim email")}
               </a>
             </div>
-            {/* CV Download */}
+            {/* CV and resume downloads */}
             <div className="flex flex-wrap items-center justify-center gap-2">
+              <a
+                href="/cv/CV_Kreatif_Elbon_Aminalloh_Asyafa_Lubis_Prasetyo.pdf"
+                download="CV_Kreatif_Elbon_Aminalloh_Asyafa_Lubis_Prasetyo.pdf"
+                className="glass-btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95">
+                <span>📄</span> {copy(language, "Download CV", "Unduh CV")}
+              </a>
               <a
                 href="/cv/Resume_Elbon_Aminalloh.pdf"
                 download="Resume_Elbon_Aminalloh.pdf"
                 className="glass-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-mono transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{
-                  color: "var(--text-2)",
-                }}>
-                <span>📄</span> Get in Touch (Resume)
+                style={{ color: "var(--text-2)" }}>
+                <span>↗</span> {copy(language, "Download resume", "Unduh resume")}
               </a>
             </div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
               style={{ background:"rgba(107,196,107,0.15)", border:"1px solid rgba(107,196,107,0.30)" }}>
               <span className="w-2 h-2 rounded-full pulse-dot" style={{ background:"#6bc46b" }} />
-              <span className="text-xs" style={{ color:"#4a9e4a" }}>Available for new projects</span>
+              <span className="text-xs" style={{ color:"#4a9e4a" }}>{copy(language, "Available for new projects", "Terbuka untuk proyek baru")}</span>
             </div>
           </div>
         </div>

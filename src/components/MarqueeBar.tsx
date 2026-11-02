@@ -1,3 +1,5 @@
+import { useLanguage } from "@/contexts/LanguageContext";
+
 const ITEMS = [
   { text:"MikroTik RouterOS", icon:"📡" },{ text:"LAN / WLAN Setup", icon:"🌐" },
   { text:"DHCP Configuration", icon:"⚙️" },{ text:"Winbox Diagnostics", icon:"🔍" },
@@ -8,6 +10,7 @@ const ITEMS = [
 const TRACK = [...ITEMS,...ITEMS];
 
 export default function MarqueeBar() {
+  const { language } = useLanguage();
   return (
     <div className="relative w-full overflow-hidden py-3 select-none"
       style={{ borderTop:"1px solid var(--lg-border-bot)", borderBottom:"1px solid var(--lg-border-bot)", background:"var(--lg-bg-card)", }}>
@@ -20,7 +23,7 @@ export default function MarqueeBar() {
         {TRACK.map((item,i) => (
           <div key={i} className="flex items-center gap-2 mx-5 text-sm whitespace-nowrap group cursor-default" style={{ color:"var(--text-3)" }}>
             <span className="transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-0.5 inline-block">{item.icon}</span>
-            <span className="transition-colors duration-200 group-hover:text-[var(--primary)]">{item.text}</span>
+            <span className="transition-colors duration-200 group-hover:text-[var(--primary)]">{language === "id" ? ({ "DHCP Configuration":"Konfigurasi DHCP", "Winbox Diagnostics":"Diagnostik Winbox", "Fault Isolation (OSI)":"Analisis Gangguan (OSI)", "Ruz Store Website":"Situs RuzStore", "TKJ — Network Engineering":"TKJ — Teknik Jaringan Komputer" } as Record<string,string>)[item.text] ?? item.text : item.text}</span>
             <span className="ml-4 w-1 h-1 rounded-full inline-block" style={{ background:"rgba(74,100,144,0.25)" }} />
           </div>
         ))}
