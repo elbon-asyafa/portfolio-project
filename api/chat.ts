@@ -1,1 +1,1 @@
-export { handleChat as default } from "../server/chat";
+export { handleChat as default } from "../server/chat.ts";
